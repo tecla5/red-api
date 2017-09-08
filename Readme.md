@@ -14,3 +14,7 @@ Same approach should be used for `runtime`!
 ## Editor
 
 The Node-red editor should be extracted and refactored using a similar approach. These two (refactoed) modules should then be used by the NodeRed Vue app.
+
+## Docs
+
+The API and Runtime are documented in the `docs` folder. Please help improve the docs!
