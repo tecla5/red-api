@@ -31,44 +31,40 @@ var log;
 var loginAttempts = [];
 var loginSignInWindow = 600000; // 10 minutes
 
+class AnonymousStrategy extends passport.Strategy {
+    constructor() {
+        passport.Strategy.call(this);
+        this.name = 'anon';
+    }
 
-
-
-function AnonymousStrategy() {
-    passport.Strategy.call(this);
-    this.name = 'anon';
-}
-
-util.inherits(AnonymousStrategy, passport.Strategy);
-AnonymousStrategy.prototype.authenticate = function (req) {
-    var self = this;
-    Users.default().then(function (anon) {
-        if (anon) {
-            self.success(anon, {
-                scope: anon.permissions
-            });
-        } else {
-            self.fail(401);
-        }
-    });
+    authenticate(req) {
+        var self = this;
+        Users.default().then(function (anon) {
+            if (anon) {
+                self.success(anon, {
+                    scope: anon.permissions
+                });
+            } else {
+                self.fail(401);
+            }
+        })
+    }
 }
 
 module.exports = class Strategies {
     constructor(runtime) {
-        log = runtime.log;
-
+        this.log = runtime.log;
         this.bearerStrategy.BearerStrategy = new BearerStrategy(bearerStrategy);
-
         this.clientPasswordStrategy.ClientPasswordStrategy = new ClientPasswordStrategy(clientPasswordStrategy);
-
         this.anonymousStrategy = new AnonymousStrategy()
     }
 
     bearerStrategy(accessToken, done) {
+        var log = this.log;
         // is this a valid token?
-        Tokens.get(accessToken).then(function (token) {
+        Tokens.get(accessToken).then((token) => {
             if (token) {
-                Users.get(token.user).then(function (user) {
+                Users.get(token.user).then((user) => {
                     if (user) {
                         done(null, user, {
                             scope: token.scope
@@ -90,6 +86,7 @@ module.exports = class Strategies {
     }
 
     clientPasswordStrategy(clientId, clientSecret, done) {
+        var log = this.log;
         Clients.get(clientId).then(function (client) {
             if (client && client.secret == clientSecret) {
                 done(null, client);
@@ -103,10 +100,10 @@ module.exports = class Strategies {
         });
     }
 
-
     passwordTokenExchange(client, username, password, scope, done) {
+        var log = this.log;
         var now = Date.now();
-        loginAttempts = loginAttempts.filter(function (logEntry) {
+        loginAttempts = loginAttempts.filter((logEntry) => {
             return logEntry.time + loginSignInWindow > now;
         });
         loginAttempts.push({
@@ -114,7 +111,7 @@ module.exports = class Strategies {
             user: username
         });
         var attemptCount = 0;
-        loginAttempts.forEach(function (logEntry) {
+        loginAttempts.forEach((logEntry) => {
             /* istanbul ignore else */
             if (logEntry.user == username) {
                 attemptCount++;
@@ -130,16 +127,16 @@ module.exports = class Strategies {
             return;
         }
 
-        Users.authenticate(username, password).then(function (user) {
+        Users.authenticate(username, password).then((user) => {
             if (user) {
                 if (scope === "") {
                     scope = user.permissions;
                 }
                 if (permissions.hasPermission(user.permissions, scope)) {
-                    loginAttempts = loginAttempts.filter(function (logEntry) {
+                    loginAttempts = loginAttempts.filter((logEntry) => {
                         return logEntry.user !== username;
                     });
-                    Tokens.create(username, client.id, scope).then(function (tokens) {
+                    Tokens.create(username, client.id, scope).then((tokens) => {
                         log.audit({
                             event: "auth.login",
                             username: username,
