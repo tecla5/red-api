@@ -144,6 +144,14 @@ That is, it checks if all `.js` files in source have a matching `_spec.js` file 
 
 `red_spec.js` checks the build and externals such as `package.json`
 
+#### Referencing src classes in tests
+
+Note that the `/test/api/index.js` file should be used to import all the necessary src files, classes and variables needed to test the api.
+
+#### Missing dev dependencies
+
+Note that currently not all the `devDependencies` needed to run the mocha tests have been added. Please consult the original *node-red* `devDependencies` entry in `package.json`.
+
 ## Ava tests
 
 Ideally we would like the tests to be rewritten for Ava
