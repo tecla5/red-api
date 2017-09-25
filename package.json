@@ -7,11 +7,18 @@
     "test": "test"
   },
   "scripts": {
-    "test": "ava"
+    "test": "nyc ava",
+    "build:prod": "webpack --progress --colors --env=prod",
+    "build:dev": "webpack --progress --colors --env=dev"
   },
   "keywords": [
-    "nodered"
+    "nodered",
+    "api"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tecla5/red-api.git"
+  },
   "author": "Kristian Mandrup",
   "license": "ISC",
   "dependencies": {
@@ -53,6 +60,11 @@
     "bcrypt": "~1.0.1"
   },
   "devDependencies": {
+    "istanbul": "0.4.5",
+    "mocha": "~3.4.2",
+    "should": "^8.4.0",
+    "sinon": "1.17.7",
+    "supertest": "3.0.0",
     "ava": "^0.22.0",
     "babel-cli": "^6.24.0",
     "babel-core": "^6.24.1",

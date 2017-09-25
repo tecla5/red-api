@@ -2,11 +2,11 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  entry: path.resolve(__dirname, '../src/index.js'),
+  entry: path.resolve(__dirname, '../src/new/index.js'),
   output: {
     path: path.resolve(__dirname, '../dist'),
     filename: 'bundle.js',
-    library: 'editor',
+    library: 'api',
     libraryTarget: 'umd'
   },
   module: {

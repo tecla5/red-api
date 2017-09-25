@@ -20,7 +20,7 @@ var path = require('path');
 var runtime = require("./runtime");
 var api = require("./api");
 
-process.env.NODE_RED_HOME = process.env.NODE_RED_HOME || path.resolve(__dirname+"/..");
+process.env.NODE_RED_HOME = process.env.NODE_RED_HOME || path.resolve(__dirname + "/..");
 
 var nodeApp = null;
 var adminApp = null;
@@ -29,7 +29,7 @@ var apiEnabled = false;
 
 function checkVersion(userSettings) {
     var semver = require('semver');
-    if (!semver.satisfies(process.version,">=4.0.0")) {
+    if (!semver.satisfies(process.version, ">=4.0.0")) {
         // TODO: in the future, make this a hard error.
         // var e = new Error("Unsupported version of node.js");
         // e.code = "unsupported_version";
@@ -39,10 +39,10 @@ function checkVersion(userSettings) {
 }
 
 function checkBuild() {
-    var editorFile = path.resolve(path.join(__dirname,"..","public","red","red.min.js"));
+    var editorFile = path.resolve(path.join(__dirname, "..", "public", "red", "red.min.js"));
     try {
         var stats = fs.statSync(editorFile);
-    } catch(err) {
+    } catch (err) {
         var e = new Error("Node-RED not built");
         e.code = "not_built";
         throw e;
@@ -50,7 +50,7 @@ function checkBuild() {
 }
 
 module.exports = {
-    init: function(httpServer,userSettings) {
+    init: function (httpServer, userSettings) {
         if (!userSettings) {
             userSettings = httpServer;
             httpServer = null;
@@ -62,12 +62,12 @@ module.exports = {
         }
 
         if (!userSettings.coreNodesDir) {
-            userSettings.coreNodesDir = path.resolve(path.join(__dirname,"..","nodes"));
+            userSettings.coreNodesDir = path.resolve(path.join(__dirname, "..", "nodes"));
         }
 
         if (userSettings.httpAdminRoot !== false) {
-            runtime.init(userSettings,api);
-            api.init(httpServer,runtime);
+            runtime.init(userSettings, api);
+            api.init(httpServer, runtime);
             apiEnabled = true;
         } else {
             runtime.init(userSettings);
@@ -78,15 +78,15 @@ module.exports = {
         server = runtime.adminApi.server;
         return;
     },
-    start: function() {
-        return runtime.start().then(function() {
+    start: function () {
+        return runtime.start().then(function () {
             if (apiEnabled) {
                 return api.start();
             }
         });
     },
-    stop: function() {
-        return runtime.stop().then(function() {
+    stop: function () {
+        return runtime.stop().then(function () {
             if (apiEnabled) {
                 return api.stop();
             }
@@ -94,7 +94,7 @@ module.exports = {
     },
     nodes: runtime.nodes,
     log: runtime.log,
-    settings:runtime.settings,
+    settings: runtime.settings,
     util: runtime.util,
     version: runtime.version,
 
@@ -102,8 +102,17 @@ module.exports = {
     library: api.library,
     auth: api.auth,
 
-    get app() { console.log("Deprecated use of RED.app - use RED.httpAdmin instead"); return runtime.app },
-    get httpAdmin() { return adminApp },
-    get httpNode() { return nodeApp },
-    get server() { return server }
+    get app() {
+        console.log("Deprecated use of RED.app - use RED.httpAdmin instead");
+        return runtime.app
+    },
+    get httpAdmin() {
+        return adminApp
+    },
+    get httpNode() {
+        return nodeApp
+    },
+    get server() {
+        return server
+    }
 };
