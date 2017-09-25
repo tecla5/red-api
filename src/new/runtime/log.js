@@ -48,6 +48,8 @@ var metricsEnabled = false;
 class LogHandler extends EventEmitter {
 
     constructor(settings) {
+        super()
+
         this.logLevel = settings ? levels[settings.level] || levels.info : levels.info;
         this.metricsOn = settings ? settings.metrics || false : false;
         this.auditOn = settings ? settings.audit || false : false;
@@ -60,13 +62,12 @@ class LogHandler extends EventEmitter {
                 this.handler(msg);
             }
         });
+    }
 
-        shouldReportMessage(msglevel) {
-            return (msglevel == log.METRIC && this.metricsOn) ||
-                (msglevel == log.AUDIT && this.auditOn) ||
-                msglevel <= this.logLevel;
-        }
-
+    shouldReportMessage(msglevel) {
+        return (msglevel == log.METRIC && this.metricsOn) ||
+            (msglevel == log.AUDIT && this.auditOn) ||
+            msglevel <= this.logLevel;
     }
 }
 

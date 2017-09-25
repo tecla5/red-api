@@ -38,6 +38,8 @@ function log_helper(self, level, msg) {
 
 module.exports = class Node extends EventEmitter {
     constructor(n) {
+        super(n)
+
         this.id = n.id;
         this.type = n.type;
         this.z = n.z;

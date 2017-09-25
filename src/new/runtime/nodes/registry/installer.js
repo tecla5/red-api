@@ -107,7 +107,7 @@ module.exports = class Installer {
             }
 
             var installDir = settings.userDir || process.env.NODE_RED_HOME || '.';
-            var child = child_process.execFile(npmCommand, ['install', '--save', '--save-prefix='~'', '--production', installName], {
+            var child = child_process.execFile(npmCommand, ['install', '--save', '--save-prefix="~"', '--production', installName], {
                     cwd: installDir
                 },
                 function (err, stdin, stdout) {

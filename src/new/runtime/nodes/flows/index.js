@@ -433,10 +433,12 @@ module.exports = class Flows {
                 log.info(log._("nodes.flows.stopping-flows"));
             }
         }
-        started = false;
-        var promises = [];
+
+        this.started = false;
+        this.promises = [];
         var stopList;
         var removedList = diff.removed;
+
         if (type === 'nodes') {
             stopList = diff.changed.concat(diff.removed);
         } else if (type === 'flows') {
@@ -485,30 +487,34 @@ module.exports = class Flows {
         });
     }
 
-    get started() {
-            return started
-        },
+    addFlow(flow) {
+        var i, node;
+        if (!flow.hasOwnProperty('nodes')) {
+            throw new Error('missing nodes property');
+        }
+        flow.id = redUtil.generateId();
 
-        handleError: handleError,
-        handleStatus: handleStatus,
+        var nodes = [{
+            type: 'tab',
+            label: flow.label,
+            id: flow.id
+        }];
 
-        checkTypeInUse: checkTypeInUse,
-
-        addFlow(flow) {
-            var i, node;
-            if (!flow.hasOwnProperty('nodes')) {
-                throw new Error('missing nodes property');
+        for (i = 0; i < flow.nodes.length; i++) {
+            node = flow.nodes[i];
+            if (activeFlowConfig.allNodes[node.id]) {
+                // TODO nls
+                return when.reject(new Error('duplicate id'));
             }
-            flow.id = redUtil.generateId();
-
-            var nodes = [{
-                type: 'tab',
-                label: flow.label,
-                id: flow.id
-            }];
-
-            for (i = 0; i < flow.nodes.length; i++) {
-                node = flow.nodes[i];
+            if (node.type === 'tab' || node.type === 'subflow') {
+                return when.reject(new Error('invalid node type: ' + node.type));
+            }
+            node.z = flow.id;
+            nodes.push(node);
+        }
+        if (flow.configs) {
+            for (i = 0; i < flow.configs.length; i++) {
+                node = flow.configs[i];
                 if (activeFlowConfig.allNodes[node.id]) {
                     // TODO nls
                     return when.reject(new Error('duplicate id'));
@@ -519,30 +525,17 @@ module.exports = class Flows {
                 node.z = flow.id;
                 nodes.push(node);
             }
-            if (flow.configs) {
-                for (i = 0; i < flow.configs.length; i++) {
-                    node = flow.configs[i];
-                    if (activeFlowConfig.allNodes[node.id]) {
-                        // TODO nls
-                        return when.reject(new Error('duplicate id'));
-                    }
-                    if (node.type === 'tab' || node.type === 'subflow') {
-                        return when.reject(new Error('invalid node type: ' + node.type));
-                    }
-                    node.z = flow.id;
-                    nodes.push(node);
-                }
-            }
-            var newConfig = clone(activeConfig.flows);
-            newConfig = newConfig.concat(nodes);
-
-            return setFlows(newConfig, 'flows', true).then(function () {
-                log.info(log._("nodes.flows.added-flow", {
-                    label: (flow.label ? flow.label + " " : "") + "[" + flow.id + "]"
-                }));
-                return flow.id;
-            });
         }
+        var newConfig = clone(activeConfig.flows);
+        newConfig = newConfig.concat(nodes);
+
+        return setFlows(newConfig, 'flows', true).then(function () {
+            log.info(log._("nodes.flows.added-flow", {
+                label: (flow.label ? flow.label + " " : "") + "[" + flow.id + "]"
+            }));
+            return flow.id;
+        });
+    }
 
     getFlow(id) {
         var flow;
