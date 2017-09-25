@@ -133,6 +133,14 @@ Run Istanbul test coverage: `npm run test:coverage`
 
 See `test/mocha.opts` for mocha options, as described in [mocha usage](https://mochajs.org/#usage)
 
+To run a single mocha test `test/new/red_spec.js`:
+
+`mocha test/new/red_spec.js`
+
+You can also supply extra options and described in [mocha usage](https://mochajs.org/#usage) such as `mocha test/new/red_spec.js --globals expect`
+
+It is highly advisable to start making a simple test run and work, then continue from there with each test file until all the test suite can run.
+
 ### Test architecture
 
 The legacy mocha tests can be found in `/test` under `test/api` and `test/runtime` respectively. The folders:
