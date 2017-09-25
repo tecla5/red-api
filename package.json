@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test:ava": "nyc ava",
-    "test": "mocha", // using mocha.opts
+    "test": "mocha",
     "test:coverage": "mocha --reporter mocha-istanbul --require expect --reportFormats lcov --print both",
     "build:prod": "webpack --progress --colors --env=prod",
     "build:dev": "webpack --progress --colors --env=dev"

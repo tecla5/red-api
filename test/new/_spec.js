@@ -29,12 +29,12 @@ var should = require("should");
 var path = require('path');
 
 // Directories to check with .js files and _spec.js files respectively
-var jsdir = path.resolve(__dirname, "../red");
+var jsdir = path.resolve(__dirname, "../src/new");
 var testdir = path.resolve(__dirname, "red");
 
 var fs = require('fs');
-var walkDirectory = function(dir, topdir, done) {
-    fs.readdir(dir, function(err, list) {
+var walkDirectory = function (dir, topdir, done) {
+    fs.readdir(dir, function (err, list) {
         var error;
         var errReturned = false;
         if (err) {
@@ -53,9 +53,9 @@ var walkDirectory = function(dir, topdir, done) {
                 }
             } else {
                 file = path.resolve(dir, file);
-                fs.stat(file, function(err, stat) {
+                fs.stat(file, function (err, stat) {
                     if (stat && stat.isDirectory()) {
-                        walkDirectory(file, false, function(err) {
+                        walkDirectory(file, false, function (err) {
                             if (!error) {
                                 error = err;
                             }
@@ -85,9 +85,9 @@ var walkDirectory = function(dir, topdir, done) {
     });
 };
 
-describe('_spec.js', function() {
+describe('_spec.js', function () {
     this.timeout(50000); // we might not finish within the Mocha default timeout limit, project will also grow
-    it('is checking if all .js files have a corresponding _spec.js test file.', function(done) {
+    it('is checking if all .js files have a corresponding _spec.js test file.', function (done) {
         walkDirectory(jsdir, true, done);
     });
 });

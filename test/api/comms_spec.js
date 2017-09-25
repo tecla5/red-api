@@ -23,28 +23,42 @@ var express = require('express');
 var app = express();
 var WebSocket = require('ws');
 
-var comms = require("../../../red/api/comms");
-var Users = require("../../../red/api/auth/users");
-var Tokens = require("../../../red/api/auth/tokens");
+const api = require(".");
+
+var comms = api.instance.comms
+var Users = api.Users
+var Tokens = api.Tokens
 
 var address = '127.0.0.1';
 var listenPort = 0; // use ephemeral port
 
-describe("api/comms", function() {
-    describe("with default keepalive", function() {
+describe("api/comms", function () {
+    describe("with default keepalive", function () {
         var server;
         var url;
         var port;
-        before(function(done) {
-            sinon.stub(Users,"default",function() { return when.resolve(null);});
-            server = http.createServer(function(req,res){app(req,res)});
+        before(function (done) {
+            sinon.stub(Users, "default", function () {
+                return when.resolve(null);
+            });
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
             comms.init(server, {
-                settings:{},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+                settings: {},
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/comms';
                 comms.start();
@@ -52,69 +66,69 @@ describe("api/comms", function() {
             });
         });
 
-        after(function() {
+        after(function () {
             Users.default.restore();
             comms.stop();
         });
 
-        it('accepts connection', function(done) {
+        it('accepts connection', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.close();
                 done();
             });
         });
 
-        it('publishes message after subscription', function(done) {
+        it('publishes message after subscription', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"subscribe":"topic1"}');
                 comms.publish('topic1', 'foo');
             });
-            ws.on('message', function(msg) {
+            ws.on('message', function (msg) {
                 msg.should.equal('{"topic":"topic1","data":"foo"}');
                 ws.close();
                 done();
             });
         });
 
-        it('publishes retained message for subscription', function(done) {
+        it('publishes retained message for subscription', function (done) {
             comms.publish('topic2', 'bar', true);
             var ws = new WebSocket(url);
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"subscribe":"topic2"}');
             });
-            ws.on('message', function(msg) {
+            ws.on('message', function (msg) {
                 msg.should.equal('{"topic":"topic2","data":"bar"}');
                 ws.close();
                 done();
             });
         });
 
-        it('retained message is deleted by non-retained message', function(done) {
+        it('retained message is deleted by non-retained message', function (done) {
             comms.publish('topic3', 'retained', true);
             comms.publish('topic3', 'non-retained');
             var ws = new WebSocket(url);
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"subscribe":"topic3"}');
                 comms.publish('topic3', 'new');
             });
-            ws.on('message', function(msg) {
+            ws.on('message', function (msg) {
                 msg.should.equal('{"topic":"topic3","data":"new"}');
                 ws.close();
                 done();
             });
         });
 
-        it('malformed messages are ignored',function(done) {
+        it('malformed messages are ignored', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('not json');
                 ws.send('[]');
                 ws.send('{"subscribe":"topic3"}');
                 comms.publish('topic3', 'correct');
             });
-            ws.on('message', function(msg) {
+            ws.on('message', function (msg) {
                 msg.should.equal('{"topic":"topic3","data":"correct"}');
                 ws.close();
                 done();
@@ -125,14 +139,14 @@ describe("api/comms", function() {
         // implementation. More test should be written to test topic
         // matching once this one is passing
 
-        it.skip('receives message on correct topic', function(done) {
+        it.skip('receives message on correct topic', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"subscribe":"topic4"}');
                 comms.publish('topic5', 'foo');
                 comms.publish('topic4', 'bar');
             });
-            ws.on('message', function(msg) {
+            ws.on('message', function (msg) {
                 msg.should.equal('{"topic":"topic4","data":"bar"}');
                 ws.close();
                 done();
@@ -141,20 +155,34 @@ describe("api/comms", function() {
 
         it.skip('listens for node/status events');
     });
-    describe("disabled editor", function() {
+    describe("disabled editor", function () {
         var server;
         var url;
         var port;
-        before(function(done) {
-            sinon.stub(Users,"default",function() { return when.resolve(null);});
-            server = http.createServer(function(req,res){app(req,res)});
+        before(function (done) {
+            sinon.stub(Users, "default", function () {
+                return when.resolve(null);
+            });
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
             comms.init(server, {
-                settings:{disableEditor:true},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+                settings: {
+                    disableEditor: true
+                },
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/comms';
                 comms.start();
@@ -162,38 +190,52 @@ describe("api/comms", function() {
             });
         });
 
-        after(function() {
+        after(function () {
             Users.default.restore();
             comms.stop();
         });
 
-        it('rejects websocket connections',function(done) {
+        it('rejects websocket connections', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
-                 done(new Error("Socket connection unexpectedly accepted"));
-                 ws.close();
+            ws.on('open', function () {
+                done(new Error("Socket connection unexpectedly accepted"));
+                ws.close();
             });
-            ws.on('error', function() {
+            ws.on('error', function () {
                 done();
             });
 
         });
     });
 
-    describe("non-default httpAdminRoot set: /adminPath", function() {
+    describe("non-default httpAdminRoot set: /adminPath", function () {
         var server;
         var url;
         var port;
-        before(function(done) {
-            sinon.stub(Users,"default",function() { return when.resolve(null);});
-            server = http.createServer(function(req,res){app(req,res)});
+        before(function (done) {
+            sinon.stub(Users, "default", function () {
+                return when.resolve(null);
+            });
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
             comms.init(server, {
-                settings:{httpAdminRoot:"/adminPath"},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+                settings: {
+                    httpAdminRoot: "/adminPath"
+                },
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/adminPath/comms';
                 comms.start();
@@ -201,38 +243,52 @@ describe("api/comms", function() {
             });
         });
 
-        after(function() {
+        after(function () {
             Users.default.restore();
             comms.stop();
         });
 
-        it('accepts connections',function(done) {
+        it('accepts connections', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
-                 ws.close();
-                 done();
+            ws.on('open', function () {
+                ws.close();
+                done();
             });
-            ws.on('error', function() {
+            ws.on('error', function () {
                 done(new Error("Socket connection failed"));
             });
 
         });
     });
 
-    describe("non-default httpAdminRoot set: /adminPath/", function() {
+    describe("non-default httpAdminRoot set: /adminPath/", function () {
         var server;
         var url;
         var port;
-        before(function(done) {
-            sinon.stub(Users,"default",function() { return when.resolve(null);});
-            server = http.createServer(function(req,res){app(req,res)});
-            comms.init(server,{
-                settings:{httpAdminRoot:"/adminPath"},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+        before(function (done) {
+            sinon.stub(Users, "default", function () {
+                return when.resolve(null);
+            });
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
+            comms.init(server, {
+                settings: {
+                    httpAdminRoot: "/adminPath"
+                },
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/adminPath/comms';
                 comms.start();
@@ -240,38 +296,52 @@ describe("api/comms", function() {
             });
         });
 
-        after(function() {
+        after(function () {
             Users.default.restore();
             comms.stop();
         });
 
-        it('accepts connections',function(done) {
+        it('accepts connections', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
-                 ws.close();
-                 done();
+            ws.on('open', function () {
+                ws.close();
+                done();
             });
-            ws.on('error', function() {
+            ws.on('error', function () {
                 done(new Error("Socket connection failed"));
             });
 
         });
     });
 
-    describe("non-default httpAdminRoot set: adminPath", function() {
+    describe("non-default httpAdminRoot set: adminPath", function () {
         var server;
         var url;
         var port;
-        before(function(done) {
-            sinon.stub(Users,"default",function() { return when.resolve(null);});
-            server = http.createServer(function(req,res){app(req,res)});
+        before(function (done) {
+            sinon.stub(Users, "default", function () {
+                return when.resolve(null);
+            });
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
             comms.init(server, {
-                settings:{httpAdminRoot:"adminPath"},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+                settings: {
+                    httpAdminRoot: "adminPath"
+                },
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/adminPath/comms';
                 comms.start();
@@ -279,54 +349,68 @@ describe("api/comms", function() {
             });
         });
 
-        after(function() {
+        after(function () {
             Users.default.restore();
             comms.stop();
         });
 
-        it('accepts connections',function(done) {
+        it('accepts connections', function (done) {
             var ws = new WebSocket(url);
-            ws.on('open', function() {
-                 ws.close();
-                 done();
+            ws.on('open', function () {
+                ws.close();
+                done();
             });
-            ws.on('error', function() {
+            ws.on('error', function () {
                 done(new Error("Socket connection failed"));
             });
 
         });
     });
 
-    describe("keep alives", function() {
+    describe("keep alives", function () {
         var server;
         var url;
         var port;
-        before(function(done) {
-            sinon.stub(Users,"default",function() { return when.resolve(null);});
-            server = http.createServer(function(req,res){app(req,res)});
+        before(function (done) {
+            sinon.stub(Users, "default", function () {
+                return when.resolve(null);
+            });
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
             comms.init(server, {
-                settings:{webSocketKeepAliveTime: 100},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+                settings: {
+                    webSocketKeepAliveTime: 100
+                },
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/comms';
                 comms.start();
                 done();
             });
         });
-        after(function() {
+        after(function () {
             Users.default.restore();
             comms.stop();
         });
-        it('are sent', function(done) {
+        it('are sent', function (done) {
             var ws = new WebSocket(url);
             var count = 0;
-            ws.on('message', function(data) {
+            ws.on('message', function (data) {
                 var msg = JSON.parse(data);
-                msg.should.have.property('topic','hb');
+                msg.should.have.property('topic', 'hb');
                 msg.should.have.property('data').be.a.Number;
                 count++;
                 if (count == 3) {
@@ -335,17 +419,17 @@ describe("api/comms", function() {
                 }
             });
         });
-        it('are not sent if other messages are sent', function(done) {
+        it('are not sent if other messages are sent', function (done) {
             var ws = new WebSocket(url);
             var count = 0;
             var interval;
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"subscribe":"foo"}');
-                interval = setInterval(function() {
+                interval = setInterval(function () {
                     comms.publish('foo', 'bar');
                 }, 50);
             });
-            ws.on('message', function(data) {
+            ws.on('message', function (data) {
                 var msg = JSON.parse(data);
                 // It is possible a heartbeat message may arrive - so ignore them
                 if (msg.topic != "hb") {
@@ -362,73 +446,95 @@ describe("api/comms", function() {
         });
     });
 
-    describe('authentication required, no anonymous',function() {
+    describe('authentication required, no anonymous', function () {
         var server;
         var url;
         var port;
         var getDefaultUser;
         var getUser;
         var getToken;
-        before(function(done) {
-            getDefaultUser = sinon.stub(Users,"default",function() { return when.resolve(null);});
-            getUser = sinon.stub(Users,"get", function(username) {
+        before(function (done) {
+            getDefaultUser = sinon.stub(Users, "default", function () {
+                return when.resolve(null);
+            });
+            getUser = sinon.stub(Users, "get", function (username) {
                 if (username == "fred") {
-                    return when.resolve({permissions:"read"});
+                    return when.resolve({
+                        permissions: "read"
+                    });
                 } else {
                     return when.resolve(null);
                 }
             });
-            getToken = sinon.stub(Tokens,"get",function(token) {
+            getToken = sinon.stub(Tokens, "get", function (token) {
                 if (token == "1234") {
-                    return when.resolve({user:"fred",scope:["*"]});
+                    return when.resolve({
+                        user: "fred",
+                        scope: ["*"]
+                    });
                 } else if (token == "5678") {
-                    return when.resolve({user:"barney",scope:["*"]});
+                    return when.resolve({
+                        user: "barney",
+                        scope: ["*"]
+                    });
                 } else {
                     return when.resolve(null);
                 }
             });
 
 
-            server = http.createServer(function(req,res){app(req,res)});
-            comms.init(server,{
-                settings:{adminAuth:{}},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
+            comms.init(server, {
+                settings: {
+                    adminAuth: {}
+                },
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/comms';
                 comms.start();
                 done();
             });
         });
-        after(function() {
+        after(function () {
             getDefaultUser.restore();
             getUser.restore();
             getToken.restore();
             comms.stop();
         });
 
-        it('prevents connections that do not authenticate',function(done) {
+        it('prevents connections that do not authenticate', function (done) {
             var ws = new WebSocket(url);
             var count = 0;
             var interval;
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"subscribe":"foo"}');
             });
-            ws.on('close', function() {
+            ws.on('close', function () {
                 done();
             });
         });
 
-        it('allows connections that do authenticate',function(done) {
+        it('allows connections that do authenticate', function (done) {
             var ws = new WebSocket(url);
             var received = 0;
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"auth":"1234"}');
             });
-            ws.on('message', function(msg) {
+            ws.on('message', function (msg) {
                 received++;
                 if (received == 1) {
                     msg.should.equal('{"auth":"ok"}');
@@ -440,84 +546,100 @@ describe("api/comms", function() {
                 }
             });
 
-            ws.on('close', function() {
+            ws.on('close', function () {
                 try {
                     received.should.equal(2);
                     done();
-                } catch(err) {
+                } catch (err) {
                     done(err);
                 }
             });
         });
 
-        it('rejects connections for non-existant token',function(done) {
+        it('rejects connections for non-existant token', function (done) {
             var ws = new WebSocket(url);
             var received = 0;
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"auth":"2345"}');
             });
-            ws.on('close', function() {
+            ws.on('close', function () {
                 done();
             });
         });
-        it('rejects connections for invalid token',function(done) {
+        it('rejects connections for invalid token', function (done) {
             var ws = new WebSocket(url);
             var received = 0;
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"auth":"5678"}');
             });
-            ws.on('close', function() {
+            ws.on('close', function () {
                 done();
             });
         });
     });
 
-    describe('authentication required, anonymous enabled',function() {
+    describe('authentication required, anonymous enabled', function () {
         var server;
         var url;
         var port;
         var getDefaultUser;
-        before(function(done) {
-            getDefaultUser = sinon.stub(Users,"default",function() { return when.resolve({permissions:"read"});});
-            server = http.createServer(function(req,res){app(req,res)});
+        before(function (done) {
+            getDefaultUser = sinon.stub(Users, "default", function () {
+                return when.resolve({
+                    permissions: "read"
+                });
+            });
+            server = http.createServer(function (req, res) {
+                app(req, res)
+            });
             comms.init(server, {
-                settings:{adminAuth:{}},
-                log:{warn:function(){},_:function(){},trace:function(){},audit:function(){}},
-                events:{on:function(){},removeListener:function(){}}
+                settings: {
+                    adminAuth: {}
+                },
+                log: {
+                    warn: function () {},
+                    _: function () {},
+                    trace: function () {},
+                    audit: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             server.listen(listenPort, address);
-            server.on('listening', function() {
+            server.on('listening', function () {
                 port = server.address().port;
                 url = 'http://' + address + ':' + port + '/comms';
                 comms.start();
                 done();
             });
         });
-        after(function() {
+        after(function () {
             getDefaultUser.restore();
             comms.stop();
         });
 
-        it('allows anonymous connections that do not authenticate',function(done) {
+        it('allows anonymous connections that do not authenticate', function (done) {
             var ws = new WebSocket(url);
             var count = 0;
             var interval;
-            ws.on('open', function() {
+            ws.on('open', function () {
                 ws.send('{"subscribe":"foo"}');
-                setTimeout(function() {
+                setTimeout(function () {
                     comms.publish('foo', 'correct');
-                },200);
+                }, 200);
             });
-            ws.on('message', function(msg) {
+            ws.on('message', function (msg) {
                 msg.should.equal('{"topic":"foo","data":"correct"}');
                 count++;
                 ws.close();
             });
-            ws.on('close', function() {
+            ws.on('close', function () {
                 try {
                     count.should.equal(1);
                     done();
-                } catch(err) {
+                } catch (err) {
                     done(err);
                 }
             });

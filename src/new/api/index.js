@@ -1,8 +1,13 @@
 const Comms = require('./comms')
+const {
+  Users,
+  Tokens
+} = require('./auth')
 
-module.exports = class Api {
+class Api {
   constructor(runtime) {
     this.comms = new Comms(runtime)
+    this.users = new auth.Users(runtime)
   }
 
   get comms() {
@@ -10,4 +15,10 @@ module.exports = class Api {
   }
 
   // ...
+}
+
+module.exports = {
+  Api,
+  Users,
+  Tokens
 }

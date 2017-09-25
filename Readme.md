@@ -133,6 +133,17 @@ Run Istanbul test coverage: `npm run test:coverage`
 
 See `test/mocha.opts` for mocha options, as described in [mocha usage](https://mochajs.org/#usage)
 
+### Test architecture
+
+The legacy mocha tests can be found in `/test` under `test/api` and `test/runtime` respectively. The folders:
+
+The folders `test/new` and `test/legacy` contains special global test cases.
+
+`_spec.js` tests *is checking if all .js files have a corresponding _spec.js test file.*
+That is, it checks if all `.js` files in source have a matching `_spec.js` file under `/test`.
+
+`red_spec.js` checks the build and externals such as `package.json`
+
 ## Ava tests
 
 Ideally we would like the tests to be rewritten for Ava
