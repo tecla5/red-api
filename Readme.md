@@ -123,11 +123,21 @@ With the following `devDependencies`:
 }
 ```
 
-### Ava tests
+### Run mocha and instanbul
+
+The `package.json` has been set up with scripts:
+
+Run tests: `npm test` or simply `mocha`
+
+Run Istanbul test coverage: `npm run test:coverage`
+
+See `test/mocha.opts` for mocha options, as described in [mocha usage](https://mochajs.org/#usage)
+
+## Ava tests
 
 Ideally we would like the tests to be rewritten for Ava
 
-Run `npm test` or `ava`
+Run `npm run test:ava` or simply `ava`
 
 To run individual tests:
 
