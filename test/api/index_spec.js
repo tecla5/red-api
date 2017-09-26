@@ -1,39 +1,42 @@
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
 
-var should = require("should");
-var sinon = require("sinon");
-var request = require("supertest");
-var express = require("express");
-var when = require("when");
-var fs = require("fs");
-var path = require("path");
+var should = require('should');
+var sinon = require('sinon');
+var request = require('supertest');
+var express = require('express');
+var when = require('when');
+var fs = require('fs');
+var path = require('path');
+
+var globals = require('.')
 
 // FIX: using Api instance
 var {
     Api
-} = require(".")
+} = globals
+var api
 
-describe("api index", function () {
+describe('api index', function () {
     var app;
 
-    describe("disables editor", function () {
+    describe('disables editor', function () {
         before(function () {
             // FIX: using constructor instead of legacy init
-            new Api({}, {
+            api = new Api({}, {
                 settings: {
                     httpNodeRoot: true,
                     httpAdminRoot: true,
@@ -59,33 +62,38 @@ describe("api index", function () {
 
         it('does not serve the editor', function (done) {
             request(app)
-                .get("/")
+                .get('/')
                 .expect(404, done)
         });
         it('does not serve icons', function (done) {
             request(app)
-                .get("/icons/default.png")
+                .get('/icons/default.png')
                 .expect(404, done)
         });
         it('serves settings', function (done) {
             request(app)
-                .get("/settings")
+                .get('/settings')
                 .expect(200, done)
         });
     });
 
-    describe("can serve auth", function () {
+    describe('can serve auth', function () {
         var mockList = [
             'ui', 'nodes', 'flows', 'library', 'info', 'locales', 'credentials'
         ]
         before(function () {
             mockList.forEach(function (m) {
-                sinon.stub(require("../../../red/api/" + m), "init", function () {});
+                let mock = require('../../src/new/api/' + m)
+                // FIX: stub constructor with empty function
+                // See: https://stackoverflow.com/questions/40271140/es2016-class-sinon-stub-constructor
+                sinon.stub(mock.prototype, 'constructor',
+                    function () {});
             });
         });
         after(function () {
             mockList.forEach(function (m) {
-                require("../../../red/api/" + m).init.restore();
+                let mock = require('../../src/new/api/' + m)
+                new mock().restore();
             })
         });
         before(function () {
@@ -94,10 +102,10 @@ describe("api index", function () {
                     httpNodeRoot: true,
                     httpAdminRoot: true,
                     adminAuth: {
-                        type: "credentials",
+                        type: 'credentials',
                         users: [],
                         default: {
-                            permissions: "read"
+                            permissions: 'read'
                         }
                     }
                 },
@@ -116,36 +124,40 @@ describe("api index", function () {
 
         it('it now serves auth', function (done) {
             request(app)
-                .get("/auth/login")
+                .get('/auth/login')
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.type.should.equal("credentials");
+                    res.body.type.should.equal('credentials');
                     done();
                 });
         });
     });
 
-    describe("editor warns if runtime not started", function () {
+    describe('editor warns if runtime not started', function () {
         var mockList = [
             'nodes', 'flows', 'library', 'info', 'theme', 'locales', 'credentials'
         ]
         before(function () {
             mockList.forEach(function (m) {
-                sinon.stub(require("../../../red/api/" + m), "init", function () {});
+                let mock = require('../../src/new/api/' + m)
+
+                // FIX: stub constructor with empty function
+                sinon.stub(mock.prototype, 'constructor', function () {});
             });
         });
         after(function () {
             mockList.forEach(function (m) {
-                require("../../../red/api/" + m).init.restore();
+                let mock = require('../../src/new/api/' + m)
+                new mock().restore();
             })
         });
 
         it('serves the editor', function (done) {
             var errorLog = sinon.spy();
-            api.init({}, {
+            api = new Api({}, {
                 log: {
                     audit: function () {},
                     error: errorLog
@@ -163,15 +175,16 @@ describe("api index", function () {
                     return false;
                 } // <-----
             });
+
             app = api.adminApp;
             request(app)
-                .get("/")
+                .get('/')
                 .expect(503)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.text.should.eql("Not started");
+                    res.text.should.eql('Not started');
                     errorLog.calledOnce.should.be.true();
                     done();
                 });
@@ -179,24 +192,27 @@ describe("api index", function () {
 
     });
 
-    describe("enables editor", function () {
+    describe('enables editor', function () {
 
         var mockList = [
             'nodes', 'flows', 'library', 'info', 'theme', 'locales', 'credentials'
         ]
         before(function () {
             mockList.forEach(function (m) {
-                sinon.stub(require("../../../red/api/" + m), "init", function () {});
+                let mock = require('../../src/new/api/' + m)
+                // FIX: stub constructor with empty function
+                sinon.stub(mock.prototype, "constructor", function () {});
             });
         });
         after(function () {
             mockList.forEach(function (m) {
-                require("../../../red/api/" + m).init.restore();
+                let mock = require('../../src/new/api/' + m)
+                new mock().restore();
             })
         });
 
         before(function () {
-            api.init({}, {
+            api = new Api({}, {
                 log: {
                     audit: function () {}
                 },
@@ -217,31 +233,31 @@ describe("api index", function () {
         });
         it('serves the editor', function (done) {
             request(app)
-                .get("/")
+                .get('/')
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
                     // Index page should probably mention Node-RED somewhere
-                    res.text.indexOf("Node-RED").should.not.eql(-1);
+                    res.text.indexOf('Node-RED').should.not.eql(-1);
                     done();
                 });
         });
         it('serves icons', function (done) {
             request(app)
-                .get("/icons/inject.png")
-                .expect("Content-Type", /image\/png/)
+                .get('/icons/inject.png')
+                .expect('Content-Type', /image\/png/)
                 .expect(200, done)
         });
         it('serves settings', function (done) {
             request(app)
-                .get("/settings")
+                .get('/settings')
                 .expect(200, done)
         });
         it('handles page not there', function (done) {
             request(app)
-                .get("/foo")
+                .get('/foo')
                 .expect(404, done)
         });
     });

@@ -115,12 +115,12 @@ module.exports = class Users {
     }
 
     get(username) {
-        return api.get(username)
+        return this.api.get(username)
     }
     authenticate() {
-        return api.authenticate.apply(null, arguments)
+        return this.api.authenticate.apply(null, arguments)
     }
     default () {
-        return api.default();
+        return this.api.default();
     }
 };

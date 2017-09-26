@@ -1,38 +1,38 @@
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
 
-var should = require("should");
+var should = require('should');
 var request = require('supertest');
 var express = require('express');
 var bodyParser = require('body-parser');
 var sinon = require('sinon');
 var when = require('when');
 
-const api = require(".");
+const api = require('.');
 var flows = api.flows
 
-describe("flows api", function () {
+describe('flows api', function () {
 
     var app;
 
     before(function () {
         app = express();
         app.use(bodyParser.json());
-        app.get("/flows", flows.get);
-        app.post("/flows", flows.post);
+        app.get('/flows', flows.get);
+        app.post('/flows', flows.post);
     });
 
     it('returns flow - v1', function (done) {
@@ -46,7 +46,7 @@ describe("flows api", function () {
             nodes: {
                 getFlows: function () {
                     return {
-                        rev: "123",
+                        rev: '123',
                         flows: [1, 2, 3]
                     };
                 }
@@ -79,7 +79,7 @@ describe("flows api", function () {
             nodes: {
                 getFlows: function () {
                     return {
-                        rev: "123",
+                        rev: '123',
                         flows: [1, 2, 3]
                     };
                 }
@@ -212,7 +212,7 @@ describe("flows api", function () {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("code", "version_mismatch");
+                res.body.should.have.property('code', 'version_mismatch');
                 done();
             });
     });
@@ -250,7 +250,7 @@ describe("flows api", function () {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("rev", 456);
+                res.body.should.have.property('rev', 456);
                 done();
             });
     });
@@ -287,7 +287,7 @@ describe("flows api", function () {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("rev", 456);
+                res.body.should.have.property('rev', 456);
                 done();
             });
     });
@@ -346,7 +346,7 @@ describe("flows api", function () {
             },
             nodes: {
                 setFlows: function () {
-                    return when.reject(new Error("expected error"));
+                    return when.reject(new Error('expected error'));
                 }
             }
         });
@@ -358,7 +358,7 @@ describe("flows api", function () {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("message", "expected error");
+                res.body.should.have.property('message', 'expected error');
                 done();
             });
     });

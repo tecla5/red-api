@@ -1,43 +1,43 @@
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
 
-var should = require("should");
+var should = require('should');
 var request = require('supertest');
 var express = require('express');
 var bodyParser = require('body-parser');
 var sinon = require('sinon');
 var when = require('when');
 
-const api = require(".");
+const api = require('.');
 var flow = api.flow
 
-describe("flow api", function () {
+describe('flow api', function () {
 
     var app;
 
     before(function () {
         app = express();
         app.use(bodyParser.json());
-        app.get("/flow/:id", flow.get);
-        app.post("/flow", flow.post);
-        app.put("/flow/:id", flow.put);
-        app.delete("/flow/:id", flow.delete);
+        app.get('/flow/:id', flow.get);
+        app.post('/flow', flow.post);
+        app.put('/flow/:id', flow.put);
+        app.delete('/flow/:id', flow.delete);
     });
 
-    describe("get", function () {
+    describe('get', function () {
         before(function () {
             flow.init({
                 settings: {},
@@ -79,16 +79,16 @@ describe("flow api", function () {
         })
     });
 
-    describe("add", function () {
+    describe('add', function () {
         before(function () {
             flow.init({
                 settings: {},
                 nodes: {
                     addFlow: function (f) {
-                        if (f.id === "123") {
+                        if (f.id === '123') {
                             return when.resolve('123')
                         } else {
-                            return when.reject(new Error("test error"));
+                            return when.reject(new Error('test error'));
                         }
                     }
                 },
@@ -133,24 +133,24 @@ describe("flow api", function () {
         })
     })
 
-    describe("update", function () {
+    describe('update', function () {
         var nodes;
         before(function () {
             nodes = {
                 updateFlow: function (id, f) {
                     var err;
-                    if (id === "123") {
+                    if (id === '123') {
                         return when.resolve()
-                    } else if (id === "unknown") {
+                    } else if (id === 'unknown') {
                         err = new Error();
                         err.code = 404;
                         throw err;
-                    } else if (id === "unexpected") {
+                    } else if (id === 'unexpected') {
                         err = new Error();
                         err.code = 500;
                         throw err;
                     } else {
-                        return when.reject(new Error("test error"));
+                        return when.reject(new Error('test error'));
                     }
                 }
             };
@@ -164,7 +164,7 @@ describe("flow api", function () {
         })
 
         it('updates an existing flow', function (done) {
-            sinon.spy(nodes, "updateFlow");
+            sinon.spy(nodes, 'updateFlow');
             request(app)
                 .put('/flow/123')
                 .set('Accept', 'application/json')
@@ -235,19 +235,19 @@ describe("flow api", function () {
         })
     })
 
-    describe("delete", function () {
+    describe('delete', function () {
         var nodes;
         before(function () {
             nodes = {
                 removeFlow: function (id) {
                     var err;
-                    if (id === "123") {
+                    if (id === '123') {
                         return when.resolve()
-                    } else if (id === "unknown") {
+                    } else if (id === 'unknown') {
                         err = new Error();
                         err.code = 404;
                         throw err;
-                    } else if (id === "unexpected") {
+                    } else if (id === 'unexpected') {
                         err = new Error();
                         err.code = 500;
                         throw err;
@@ -264,7 +264,7 @@ describe("flow api", function () {
         })
 
         it('updates an existing flow', function (done) {
-            sinon.spy(nodes, "removeFlow");
+            sinon.spy(nodes, 'removeFlow');
             request(app)
                 .delete('/flow/123')
                 .expect(204)

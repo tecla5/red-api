@@ -10,11 +10,11 @@ const Comms = require('./comms')
 const Credentials = require('./credentials')
 const Flow = require('./flow')
 const Flows = require('./flows')
+const Info = require('./info')
 const Library = require('./library')
 const Locales = require('./locales')
 const Nodes = require('./nodes')
 const Theme = require('./theme')
-const Info = require('./info')
 const Ui = require('./ui')
 
 const {
@@ -243,6 +243,7 @@ module.exports = {
   Credentials,
   Flow,
   Flows,
+  Info,
   Library,
   Locales,
   Nodes,
@@ -250,6 +251,7 @@ module.exports = {
   Ui,
 
   // auth
+  Auth,
   Clients,
   Permissions,
   Strategies,
