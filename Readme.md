@@ -38,9 +38,38 @@ A new class-based API can be found in `src/new`
 - `api`
 - `runtime`
 
+### API classes
+
+See `src/new/api` folder
+
+- `Api` main API
+- `Comms` central communications bus
+- `Credentials` user credentials
+- `Flow` single flow node
+- `Flows` collection of flow nodes
+- `Info` editor user settings
+- `Library` flow container
+- `Locales` localization
+- `Nodes` collection of nodes
+- `Theme` themes
+- `Ui` User Interface, loading mustache templates to render UI with editor
+
+#### Authentication classes
+
+See `src/new/api/auth` folder
+
+- `Auth` main Authentication class, containing instances of other core classes in Auth
+- `Clients` application clients (editor, admin, ...)
+- `Permissions` authentication permission rules
+- `Strategies` authentication strategies
+- `Tokens` user tokens
+- `Users` user
+
 ## Objective
 
-The main objective is to make these classes work. Write tests to confirm the class struture works like the original code, keeping orinal functionality in the functions with minimal intrusion. Then step by step improve the code to use modern Javascript, using a Test Driven approach.
+The main objective is to make the refactored classes work like in the original.
+
+Write unit tests to confirm the class struture works like the original code, keeping orinal functionality in the functions with minimal intrusion. Then step by step improve the code to use modern Javascript, using a Test Driven approach.
 
 ## Editor
 
