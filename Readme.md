@@ -23,6 +23,10 @@ Install all dependencies (see `package.json`)
 
 `$ npm i`
 
+Install [mocha](mochajs.org/) test runner as a global Node module (makes mocha binary available from CLI/terminal)
+
+`npm i mocha -g`
+
 Run a test such as:
 
 `$ mocha test/api/flows_spec.js`
