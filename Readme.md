@@ -11,6 +11,22 @@ The `/api` and `/runtime` folders that form the API can be found under the `/red
 
 The old (legacy) code uses callbacks for handling asynchronous flow. In time we want to transition to modern `async/await` constructs.
 
+## Pre-requisites
+
+Make sure you have the latest version of Node installed (version 8.5+)
+
+See [Install node via package manager](https://nodejs.org/en/download/package-manager/)
+
+## Getting started
+
+Install all dependencies (see `package.json`)
+
+`$ npm i`
+
+Run a test such as:
+
+`$ mocha test/api/flows_spec.js`
+
 ## New API
 
 A new class-based API can be found in `src/new`
