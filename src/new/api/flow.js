@@ -20,19 +20,19 @@ module.exports = class Flow extends Base {
 
   // TODO: use built in Promises via await/async or then/catch
 
-  fetch() {
-    // this.redNodes.getFlow(this.id)
+  get() {
+    return this.redNodes.getFlow(this.id)
   }
 
   post(req, res) {
-    // this.redNodes.addFlow(this.flow)
+    return this.redNodes.addFlow(this.flow)
   }
 
   put(req, res) {
-    // this.redNodes.updateFlow(this.id,this.flow)
+    return this.redNodes.updateFlow(this.id, this.flow)
   }
 
   delete(req, res) {
-    // this.redNodes.removeFlow(this.id)
+    return this.redNodes.removeFlow(this.id)
   }
 }

@@ -9,4 +9,8 @@ module.exports = class Credentials extends Base {
 
   // extract credentials from request and send in response
   process(req, res) {}
+
+  get() {
+    // TODO
+  }
 }

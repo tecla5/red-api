@@ -1,5 +1,5 @@
-var express = require("express");
-var bodyParser = require("body-parser");
+var express = require('express');
+var bodyParser = require('body-parser');
 var util = require('util');
 var path = require('path');
 var passport = require('passport');
@@ -50,15 +50,26 @@ class Api {
       var auth = new Auth(runtime);
       this.auth = auth
 
-      this.credentials = new Credentials(runtime);
+      var credentials = new Credentials(runtime);
+      this.credentials = credentials
+
       var flows = new Flows(runtime);
       this.flows = flows
+
       var flow = new Flow(runtime);
       this.flow = flow
-      this.info = new Info(runtime);
-      this.library = new Library(adminApp, runtime);
-      this.locales = new Locales(runtime);
-      this.nodes = new Nodes(runtime);
+
+      var info = new Info(runtime);
+      this.info = info
+
+      var library = new Library(adminApp, runtime);
+      this.library = library
+
+      var locales = new Locales(runtime);
+      this.locales = locales
+
+      var nodes = new Nodes(runtime);
+      this.nodes = nodes
 
       // Editor
       if (!settings.disableEditor) {
@@ -81,16 +92,16 @@ class Api {
         }
         var ensureRuntimeStarted = this.ensureRuntimeStarted.bind(this)
 
-        editorApp.get("/", ensureRuntimeStarted, ui.ensureSlash, ui.editor);
-        editorApp.get("/icons/:module/:icon", ui.icon);
-        editorApp.get("/icons/:scope/:module/:icon", ui.icon);
+        editorApp.get('/', ensureRuntimeStarted, ui.ensureSlash, ui.editor);
+        editorApp.get('/icons/:module/:icon', ui.icon);
+        editorApp.get('/icons/:scope/:module/:icon', ui.icon);
 
         // FIX: using class constructor
         var theme = new Theme(runtime);
         this.theme = theme
 
-        editorApp.use("/theme", theme.app());
-        editorApp.use("/", ui.editorResources);
+        editorApp.use('/theme', theme.app());
+        editorApp.use('/', ui.editorResources);
         adminApp.use(editorApp);
       }
       var maxApiRequestSize = settings.apiMaxLength || '5mb';
@@ -105,59 +116,67 @@ class Api {
       var errorHandler = this.errorHandler.bind(this)
       var needsPermission = auth.needsPermission
 
-      adminApp.get("/auth/login", auth.login, errorHandler);
+      adminApp.get('/auth/login', auth.login, errorHandler);
 
       if (settings.adminAuth) {
-        if (settings.adminAuth.type === "strategy") {
+        if (settings.adminAuth.type === 'strategy') {
           auth.genericStrategy(adminApp, settings.adminAuth.strategy);
-        } else if (settings.adminAuth.type === "credentials") {
+        } else if (settings.adminAuth.type === 'credentials') {
           adminApp.use(passport.initialize());
-          adminApp.post("/auth/token",
+          adminApp.post('/auth/token',
             auth.ensureClientSecret,
             auth.authenticateClient,
             auth.getToken,
             auth.errorHandler
           );
         }
-        adminApp.post("/auth/revoke", needsPermission(""), auth.revoke, errorHandler);
+        adminApp.post('/auth/revoke', needsPermission(''), auth.revoke, errorHandler);
       }
       if (settings.httpAdminCors) {
         var corsHandler = cors(settings.httpAdminCors);
         adminApp.use(corsHandler);
       }
 
-      // Flows
-      adminApp.get("/flows", needsPermission("flows.read"), flows.get, errorHandler);
-      adminApp.post("/flows", needsPermission("flows.write"), flows.post, errorHandler);
+      var flRead = needsPermission('flows.read')
 
-      adminApp.get("/flow/:id", needsPermission("flows.read"), flow.get, errorHandler);
-      adminApp.post("/flow", needsPermission("flows.write"), flow.post, errorHandler);
-      adminApp.delete("/flow/:id", needsPermission("flows.write"), flow.delete, errorHandler);
-      adminApp.put("/flow/:id", needsPermission("flows.write"), flow.put, errorHandler);
+      console.log('/flows route', {
+        flRead,
+        flGet: flow.get,
+        errorHandler
+      })
+
+      // Flows
+      adminApp.get('/flows', needsPermission('flows.read'), flows.get, errorHandler);
+      adminApp.post('/flows', needsPermission('flows.write'), flows.post, errorHandler);
+
+      adminApp.get('/flow/:id', needsPermission('flows.read'), flow.get, errorHandler);
+      adminApp.post('/flow', needsPermission('flows.write'), flow.post, errorHandler);
+      adminApp.delete('/flow/:id', needsPermission('flows.write'), flow.delete, errorHandler);
+      adminApp.put('/flow/:id', needsPermission('flows.write'), flow.put, errorHandler);
 
       // Nodes
-      adminApp.get("/nodes", needsPermission("nodes.read"), nodes.getAll, errorHandler);
-      adminApp.post("/nodes", needsPermission("nodes.write"), nodes.post, errorHandler);
+      adminApp.get('/nodes', needsPermission('nodes.read'), nodes.getAll, errorHandler);
+      adminApp.post('/nodes', needsPermission('nodes.write'), nodes.post, errorHandler);
 
-      adminApp.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, needsPermission("nodes.read"), nodes.getModule, errorHandler);
-      adminApp.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, needsPermission("nodes.write"), nodes.putModule, errorHandler);
-      adminApp.delete(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, needsPermission("nodes.write"), nodes.delete, errorHandler);
+      adminApp.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, needsPermission('nodes.read'), nodes.getModule, errorHandler);
+      adminApp.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, needsPermission('nodes.write'), nodes.putModule, errorHandler);
+      adminApp.delete(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, needsPermission('nodes.write'), nodes.delete, errorHandler);
 
-      adminApp.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, needsPermission("nodes.read"), nodes.getSet, errorHandler);
-      adminApp.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, needsPermission("nodes.write"), nodes.putSet, errorHandler);
+      adminApp.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, needsPermission('nodes.read'), nodes.getSet, errorHandler);
+      adminApp.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, needsPermission('nodes.write'), nodes.putSet, errorHandler);
 
-      adminApp.get('/credentials/:type/:id', needsPermission("credentials.read"), credentials.get, errorHandler);
+      adminApp.get('/credentials/:type/:id', needsPermission('credentials.read'), credentials.get, errorHandler);
 
       adminApp.get('/locales/nodes', locales.getAllNodes, errorHandler);
       adminApp.get(/locales\/(.+)\/?$/, locales.get, errorHandler);
 
       // Library
-      adminApp.post(new RegExp("/library/flows\/(.*)"), needsPermission("library.write"), library.post, errorHandler);
-      adminApp.get("/library/flows", needsPermission("library.read"), library.getAll, errorHandler);
-      adminApp.get(new RegExp("/library/flows\/(.*)"), needsPermission("library.read"), library.get, errorHandler);
+      adminApp.post(new RegExp('/library/flows\/(.*)'), needsPermission('library.write'), library.post, errorHandler);
+      adminApp.get('/library/flows', needsPermission('library.read'), library.getAll, errorHandler);
+      adminApp.get(new RegExp('/library/flows\/(.*)'), needsPermission('library.read'), library.get, errorHandler);
 
       // Settings
-      adminApp.get("/settings", needsPermission("settings.read"), info.settings, errorHandler);
+      adminApp.get('/settings', needsPermission('settings.read'), info.settings, errorHandler);
 
       // Error Handler
       //adminApp.use(errorHandler);
@@ -165,21 +184,21 @@ class Api {
   }
 
   start() {
-    var catalogPath = path.resolve(path.join(__dirname, "locales"));
+    var catalogPath = path.resolve(path.join(__dirname, 'locales'));
     return i18n.registerMessageCatalogs([{
-        namespace: "editor",
+        namespace: 'editor',
         dir: catalogPath,
-        file: "editor.json"
+        file: 'editor.json'
       },
       {
-        namespace: "jsonata",
+        namespace: 'jsonata',
         dir: catalogPath,
-        file: "jsonata.json"
+        file: 'jsonata.json'
       },
       {
-        namespace: "infotips",
+        namespace: 'infotips',
         dir: catalogPath,
-        file: "infotips.json"
+        file: 'infotips.json'
       }
     ]).then(function () {
       comms.start();
@@ -191,26 +210,26 @@ class Api {
   }
 
   errorHandler(err, req, res, next) {
-    if (err.message === "request entity too large") {
+    if (err.message === 'request entity too large') {
       log.error(err);
     } else {
       console.log(err.stack);
     }
     log.audit({
-      event: "api.error",
-      error: err.code || "unexpected_error",
+      event: 'api.error',
+      error: err.code || 'unexpected_error',
       message: err.toString()
     }, req);
     res.status(400).json({
-      error: "unexpected_error",
+      error: 'unexpected_error',
       message: err.toString()
     });
   };
 
   ensureRuntimeStarted(req, res, next) {
     if (!runtime.isStarted()) {
-      log.error("Node-RED runtime not started");
-      res.status(503).send("Not started");
+      log.error('Node-RED runtime not started');
+      res.status(503).send('Not started');
     } else {
       next();
     }
