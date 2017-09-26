@@ -1,94 +1,114 @@
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
 
-var should = require("should");
+var should = require('should');
 var when = require('when');
 var sinon = require('sinon');
 
-var strategies = require("../../../../red/api/auth/strategies");
-var Users = require("../../../../red/api/auth/users");
-var Tokens = require("../../../../red/api/auth/tokens");
-var Clients = require("../../../../red/api/auth/clients");
+var {
+    Strategies,
+    Users,
+    Tokens,
+    Clients
+} = require('../');
 
-describe("Auth strategies", function() {
-    before(function() {
-        strategies.init({log:{audit:function(){}}})
+var strategies, users, tokens
+
+describe('Auth strategies', function () {
+    before(function () {
+        strategies = new Strategies({
+            log: {
+                audit: function () {}
+            }
+        })
+        users = new Users()
+        tokens = new Tokens()
     });
-    describe("Password Token Exchange", function() {
+    describe('Password Token Exchange', function () {
         var userAuthentication;
-        afterEach(function() {
+        afterEach(function () {
             if (userAuthentication) {
                 userAuthentication.restore();
                 userAuthentication = null;
             }
         });
 
-        it('Handles authentication failure',function(done) {
-            userAuthentication = sinon.stub(Users,"authenticate",function(username,password) {
+        it('Handles authentication failure', function (done) {
+            userAuthentication = sinon.stub(users, 'authenticate', function (username, password) {
                 return when.resolve(null);
             });
 
-            strategies.passwordTokenExchange({},"user","password","scope",function(err,token) {
+            strategies.passwordTokenExchange({}, 'user', 'password', 'scope', function (err, token) {
                 try {
                     should.not.exist(err);
                     token.should.be.false();
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 }
             });
         });
 
-        it('Handles scope overreach',function(done) {
-            userAuthentication = sinon.stub(Users,"authenticate",function(username,password) {
-                return when.resolve({username:"user",permissions:"read"});
+        it('Handles scope overreach', function (done) {
+            userAuthentication = sinon.stub(users, 'authenticate', function (username, password) {
+                return when.resolve({
+                    username: 'user',
+                    permissions: 'read'
+                });
             });
 
-            strategies.passwordTokenExchange({},"user","password","*",function(err,token) {
+            strategies.passwordTokenExchange({}, 'user', 'password', '*', function (err, token) {
                 try {
                     should.not.exist(err);
                     token.should.be.false();
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 }
             });
         });
 
-        it('Creates new token on authentication success',function(done) {
-            userAuthentication = sinon.stub(Users,"authenticate",function(username,password) {
-                return when.resolve({username:"user",permissions:"*"});
+        it('Creates new token on authentication success', function (done) {
+            userAuthentication = sinon.stub(users, 'authenticate', function (username, password) {
+                return when.resolve({
+                    username: 'user',
+                    permissions: '*'
+                });
             });
             var tokenDetails = {};
-            var tokenCreate = sinon.stub(Tokens,"create",function(username,client,scope) {
+            var tokenCreate = sinon.stub(tokens, 'create', function (username, client, scope) {
                 tokenDetails.username = username;
                 tokenDetails.client = client;
                 tokenDetails.scope = scope;
-                return when.resolve({accessToken: "123456"});
+                return when.resolve({
+                    accessToken: '123456'
+                });
             });
 
-            strategies.passwordTokenExchange({id:"myclient"},"user","password","read",function(err,token) {
+            strategies.passwordTokenExchange({
+                id: 'myclient'
+            }, 'user', 'password', 'read', function (err, token) {
                 try {
                     should.not.exist(err);
-                    token.should.equal("123456");
-                    tokenDetails.should.have.property("username","user");
-                    tokenDetails.should.have.property("client","myclient");
-                    tokenDetails.should.have.property("scope","read");
+                    token.should.equal('123456');
+                    tokenDetails.should.have.property('username', 'user');
+                    tokenDetails.should.have.property('client', 'myclient');
+                    tokenDetails.should.have.property('scope', 'read');
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     tokenCreate.restore();
@@ -98,14 +118,14 @@ describe("Auth strategies", function() {
         });
     });
 
-    describe("Anonymous Strategy", function() {
-        it('Succeeds if anon user enabled',function(done) {
-            var userDefault = sinon.stub(Users,"default",function() {
-                return when.resolve("anon");
+    describe('Anonymous Strategy', function () {
+        it('Succeeds if anon user enabled', function (done) {
+            var userDefault = sinon.stub(Users, 'default', function () {
+                return when.resolve('anon');
             });
             strategies.anonymousStrategy._success = strategies.anonymousStrategy.success;
-            strategies.anonymousStrategy.success = function(user) {
-                user.should.equal("anon");
+            strategies.anonymousStrategy.success = function (user) {
+                user.should.equal('anon');
                 strategies.anonymousStrategy.success = strategies.anonymousStrategy._success;
                 delete strategies.anonymousStrategy._success;
                 userDefault.restore();
@@ -113,12 +133,12 @@ describe("Auth strategies", function() {
             };
             strategies.anonymousStrategy.authenticate({});
         });
-        it('Fails if anon user not enabled',function(done) {
-            var userDefault = sinon.stub(Users,"default",function() {
+        it('Fails if anon user not enabled', function (done) {
+            var userDefault = sinon.stub(Users, 'default', function () {
                 return when.resolve(null);
             });
             strategies.anonymousStrategy._fail = strategies.anonymousStrategy.fail;
-            strategies.anonymousStrategy.fail = function(err) {
+            strategies.anonymousStrategy.fail = function (err) {
                 err.should.equal(401);
                 strategies.anonymousStrategy.fail = strategies.anonymousStrategy._fail;
                 delete strategies.anonymousStrategy._fail;
@@ -129,39 +149,42 @@ describe("Auth strategies", function() {
         });
     });
 
-    describe("Bearer Strategy", function() {
-        it('Rejects invalid token',function(done) {
-            var getToken = sinon.stub(Tokens,"get",function(token) {
+    describe('Bearer Strategy', function () {
+        it('Rejects invalid token', function (done) {
+            var getToken = sinon.stub(Tokens, 'get', function (token) {
                 return when.resolve(null);
             });
 
-            strategies.bearerStrategy("1234",function(err,user) {
+            strategies.bearerStrategy('1234', function (err, user) {
                 try {
                     should.not.exist(err);
                     user.should.be.false();
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     getToken.restore();
                 }
             });
         });
-        it('Accepts valid token',function(done) {
-            var getToken = sinon.stub(Tokens,"get",function(token) {
-                return when.resolve({user:"user",scope:"scope"});
+        it('Accepts valid token', function (done) {
+            var getToken = sinon.stub(Tokens, 'get', function (token) {
+                return when.resolve({
+                    user: 'user',
+                    scope: 'scope'
+                });
             });
-            var getUser = sinon.stub(Users,"get",function(username) {
-                return when.resolve("aUser");
+            var getUser = sinon.stub(Users, 'get', function (username) {
+                return when.resolve('aUser');
             });
 
-            strategies.bearerStrategy("1234",function(err,user,opts) {
+            strategies.bearerStrategy('1234', function (err, user, opts) {
                 try {
                     should.not.exist(err);
-                    user.should.equal("aUser");
-                    opts.should.have.a.property("scope","scope");
+                    user.should.equal('aUser');
+                    opts.should.have.a.property('scope', 'scope');
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     getToken.restore();
@@ -169,21 +192,24 @@ describe("Auth strategies", function() {
                 }
             });
         });
-        it('Fail if no user for token',function(done) {
-            var getToken = sinon.stub(Tokens,"get",function(token) {
-                return when.resolve({user:"user",scope:"scope"});
+        it('Fail if no user for token', function (done) {
+            var getToken = sinon.stub(Tokens, 'get', function (token) {
+                return when.resolve({
+                    user: 'user',
+                    scope: 'scope'
+                });
             });
-            var getUser = sinon.stub(Users,"get",function(username) {
+            var getUser = sinon.stub(Users, 'get', function (username) {
                 return when.resolve(null);
             });
 
-            strategies.bearerStrategy("1234",function(err,user,opts) {
+            strategies.bearerStrategy('1234', function (err, user, opts) {
                 try {
                     should.not.exist(err);
                     user.should.equal(false);
                     should.not.exist(opts);
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     getToken.restore();
@@ -193,53 +219,59 @@ describe("Auth strategies", function() {
         });
     });
 
-    describe("Client Password Strategy", function() {
-        it('Accepts valid client',function(done) {
-            var testClient = {id:"node-red-editor",secret:"not_available"};
-            var getClient = sinon.stub(Clients,"get",function(client) {
+    describe('Client Password Strategy', function () {
+        it('Accepts valid client', function (done) {
+            var testClient = {
+                id: 'node-red-editor',
+                secret: 'not_available'
+            };
+            var getClient = sinon.stub(Clients, 'get', function (client) {
                 return when.resolve(testClient);
             });
 
-            strategies.clientPasswordStrategy(testClient.id,testClient.secret,function(err,client) {
+            strategies.clientPasswordStrategy(testClient.id, testClient.secret, function (err, client) {
                 try {
                     should.not.exist(err);
                     client.should.eql(testClient);
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     getClient.restore();
                 }
             });
         });
-        it('Rejects invalid client secret',function(done) {
-            var testClient = {id:"node-red-editor",secret:"not_available"};
-            var getClient = sinon.stub(Clients,"get",function(client) {
+        it('Rejects invalid client secret', function (done) {
+            var testClient = {
+                id: 'node-red-editor',
+                secret: 'not_available'
+            };
+            var getClient = sinon.stub(Clients, 'get', function (client) {
                 return when.resolve(testClient);
             });
 
-            strategies.clientPasswordStrategy(testClient.id,"invalid_secret",function(err,client) {
+            strategies.clientPasswordStrategy(testClient.id, 'invalid_secret', function (err, client) {
                 try {
                     should.not.exist(err);
                     client.should.be.false();
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     getClient.restore();
                 }
             });
         });
-        it('Rejects invalid client id',function(done) {
-            var getClient = sinon.stub(Clients,"get",function(client) {
+        it('Rejects invalid client id', function (done) {
+            var getClient = sinon.stub(Clients, 'get', function (client) {
                 return when.resolve(null);
             });
-            strategies.clientPasswordStrategy("invalid_id","invalid_secret",function(err,client) {
+            strategies.clientPasswordStrategy('invalid_id', 'invalid_secret', function (err, client) {
                 try {
                     should.not.exist(err);
                     client.should.be.false();
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     getClient.restore();
@@ -248,20 +280,19 @@ describe("Auth strategies", function() {
         });
 
         var userAuthentication;
-        it('Blocks after 5 failures',function(done) {
-            userAuthentication = sinon.stub(Users,"authenticate",function(username,password) {
+        it('Blocks after 5 failures', function (done) {
+            userAuthentication = sinon.stub(Users, 'authenticate', function (username, password) {
                 return when.resolve(null);
             });
-            for (var z=0; z<5; z++) {
-                strategies.passwordTokenExchange({},"user","badpassword","scope",function(err,token) {
-                });
+            for (var z = 0; z < 5; z++) {
+                strategies.passwordTokenExchange({}, 'user', 'badpassword', 'scope', function (err, token) {});
             }
-            strategies.passwordTokenExchange({},"user","badpassword","scope",function(err,token) {
+            strategies.passwordTokenExchange({}, 'user', 'badpassword', 'scope', function (err, token) {
                 try {
-                    err.toString().should.equal("Error: Too many login attempts. Wait 10 minutes and try again");
+                    err.toString().should.equal('Error: Too many login attempts. Wait 10 minutes and try again');
                     token.should.be.false();
                     done();
-                } catch(e) {
+                } catch (e) {
                     done(e);
                 } finally {
                     userAuthentication.restore();

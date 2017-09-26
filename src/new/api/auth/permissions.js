@@ -29,7 +29,7 @@ module.exports = class Permissions {
         if (util.isArray(permission)) {
             // Multiple permissions requested - check each one
             for (i = 0; i < permission.length; i++) {
-                if (!hasPermission(userScope, permission[i])) {
+                if (!this.hasPermission(userScope, permission[i])) {
                     return false;
                 }
             }
@@ -42,7 +42,7 @@ module.exports = class Permissions {
                 return false;
             }
             for (i = 0; i < userScope.length; i++) {
-                if (hasPermission(userScope[i], permission)) {
+                if (this.hasPermission(userScope[i], permission)) {
                     return true;
                 }
             }

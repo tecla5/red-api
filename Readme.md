@@ -71,6 +71,12 @@ The main objective is to make the refactored classes work like in the original.
 
 Write unit tests to confirm the class struture works like the original code, keeping orinal functionality in the functions with minimal intrusion. Then step by step improve the code to use modern Javascript, using a Test Driven approach.
 
+## Refactoring Strategy
+
+The best and easiest strategy would be to start with the simplest classes with least dependencies and then gradually build from there.
+
+Many of the tests in `test/api/auth` are already passing and these classes are pretty isolated and should be pretty easy to completely refactor to modern Javascript.
+
 ## Editor
 
 The [Node-red editor]((https://github.com/tecla5/red-editor)) is extracted and refactored using a similar approach.

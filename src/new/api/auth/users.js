@@ -36,11 +36,12 @@ class Api {
     }
 
     authenticate() {
+        var users = this.users
         var username = arguments[0];
         if (typeof username !== 'string') {
             username = username.username;
         }
-        var user = this.users[username];
+        var user = users[username];
         if (user) {
             if (arguments.length === 2) {
                 // Username/password authentication
@@ -68,11 +69,14 @@ class Api {
 
 
 module.exports = class Users {
-    constructor(config) {
-        this.users = {};
-        this.passwords = {};
-        this.defaultUser = null;
-        this.api = new Api()
+    constructor(config = {}) {
+        var users = {}
+        var passwords = {}
+        this.users = users;
+        this.passwords = passwords;
+
+        var api = new Api()
+        this.api = api
 
         if (config.type == "credentials" || config.type == "strategy") {
             if (config.users) {
@@ -97,7 +101,7 @@ module.exports = class Users {
             if (config.authenticate && typeof config.authenticate === "function") {
                 api.authenticate = config.authenticate;
             } else {
-                api.authenticate = authenticate;
+                api.authenticate = this.authenticate
             }
         }
         if (config.default) {
@@ -118,7 +122,8 @@ module.exports = class Users {
         return this.api.get(username)
     }
     authenticate() {
-        return this.api.authenticate.apply(null, arguments)
+        // FIX: Not sure about this
+        return this.api.authenticate.apply(this.api, arguments)
     }
     default () {
         return this.api.default();

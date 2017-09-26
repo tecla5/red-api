@@ -36,17 +36,18 @@ class AnonymousStrategy extends passport.Strategy {
         super()
         passport.Strategy.call(this);
         this.name = 'anon';
+        this.users = new Users()
     }
 
     authenticate(req) {
-        var self = this;
-        Users.default().then(function (anon) {
+        var users = this.users
+        users.default().then((anon) => {
             if (anon) {
-                self.success(anon, {
+                this.success(anon, {
                     scope: anon.permissions
                 });
             } else {
-                self.fail(401);
+                this.fail(401);
             }
         })
     }
@@ -58,12 +59,18 @@ module.exports = class Strategies {
         this.bearerStrategy.BearerStrategy = new BearerStrategy(this.bearerStrategy);
         this.clientPasswordStrategy.ClientPasswordStrategy = new ClientPasswordStrategy(this.clientPasswordStrategy);
         this.anonymousStrategy = new AnonymousStrategy()
+
+        this.tokens = new Tokens()
+        this.clients = new Clients()
+        this.users = new Users()
     }
 
     bearerStrategy(accessToken, done) {
+        var tokens = this.tokens
         var log = this.log;
+
         // is this a valid token?
-        Tokens.get(accessToken).then((token) => {
+        tokens.get(accessToken).then((token) => {
             if (token) {
                 Users.get(token.user).then((user) => {
                     if (user) {
@@ -88,7 +95,8 @@ module.exports = class Strategies {
 
     clientPasswordStrategy(clientId, clientSecret, done) {
         var log = this.log;
-        Clients.get(clientId).then(function (client) {
+
+        clients.get(clientId).then(function (client) {
             if (client && client.secret == clientSecret) {
                 done(null, client);
             } else {
@@ -103,7 +111,10 @@ module.exports = class Strategies {
 
     passwordTokenExchange(client, username, password, scope, done) {
         var log = this.log;
+        var users = this.users
+
         var now = Date.now();
+
         loginAttempts = loginAttempts.filter((logEntry) => {
             return logEntry.time + loginSignInWindow > now;
         });
@@ -128,7 +139,7 @@ module.exports = class Strategies {
             return;
         }
 
-        Users.authenticate(username, password).then((user) => {
+        users.authenticate(username, password).then((user) => {
             if (user) {
                 if (scope === "") {
                     scope = user.permissions;

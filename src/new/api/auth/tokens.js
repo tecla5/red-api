@@ -26,7 +26,7 @@ function generateToken(length) {
 }
 
 module.exports = class Tokens {
-    constructor(adminAuthSettings, _storage) {
+    constructor(adminAuthSettings = {}, _storage) {
         this.storage = _storage;
         this.sessionExpiryTime = adminAuthSettings.sessionExpiryTime || 604800; // 1 week in seconds
         // At this point, storage will not have been initialised, so defer loading
