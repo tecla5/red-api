@@ -69,9 +69,9 @@ class Api {
 
 module.exports = class Users {
     constructor(config) {
-        users = {};
-        passwords = {};
-        defaultUser = null;
+        this.users = {};
+        this.passwords = {};
+        this.defaultUser = null;
         this.api = new Api()
 
         if (config.type == "credentials" || config.type == "strategy") {

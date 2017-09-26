@@ -21,51 +21,56 @@ var bodyParser = require('body-parser');
 var sinon = require('sinon');
 var when = require('when');
 
-var flow = require("../../../red/api/flow");
+const api = require(".");
+var flow = api.flow
 
-describe("flow api", function() {
+describe("flow api", function () {
 
     var app;
 
-    before(function() {
+    before(function () {
         app = express();
         app.use(bodyParser.json());
-        app.get("/flow/:id",flow.get);
-        app.post("/flow",flow.post);
-        app.put("/flow/:id",flow.put);
-        app.delete("/flow/:id",flow.delete);
+        app.get("/flow/:id", flow.get);
+        app.post("/flow", flow.post);
+        app.put("/flow/:id", flow.put);
+        app.delete("/flow/:id", flow.delete);
     });
 
-    describe("get", function() {
-        before(function() {
+    describe("get", function () {
+        before(function () {
             flow.init({
-                settings:{},
+                settings: {},
                 nodes: {
-                    getFlow: function(id) {
+                    getFlow: function (id) {
                         if (id === '123') {
-                            return {id:'123'}
+                            return {
+                                id: '123'
+                            }
                         } else {
                             return null;
                         }
                     }
                 },
-                log:{ audit: sinon.stub() }
+                log: {
+                    audit: sinon.stub()
+                }
             });
         })
-        it('gets a known flow', function(done) {
+        it('gets a known flow', function (done) {
             request(app)
                 .get('/flow/123')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.should.has.a.property('id','123');
+                    res.body.should.has.a.property('id', '123');
                     done();
                 });
         })
-        it('404s an unknown flow', function(done) {
+        it('404s an unknown flow', function (done) {
             request(app)
                 .get('/flow/456')
                 .set('Accept', 'application/json')
@@ -74,12 +79,12 @@ describe("flow api", function() {
         })
     });
 
-    describe("add", function() {
-        before(function() {
+    describe("add", function () {
+        before(function () {
             flow.init({
-                settings:{},
+                settings: {},
                 nodes: {
-                    addFlow: function(f) {
+                    addFlow: function (f) {
                         if (f.id === "123") {
                             return when.resolve('123')
                         } else {
@@ -87,46 +92,52 @@ describe("flow api", function() {
                         }
                     }
                 },
-                log:{ audit: sinon.stub() }
+                log: {
+                    audit: sinon.stub()
+                }
             });
         })
-        it('adds a new flow', function(done) {
+        it('adds a new flow', function (done) {
             request(app)
                 .post('/flow')
                 .set('Accept', 'application/json')
-                .send({id:'123'})
+                .send({
+                    id: '123'
+                })
                 .expect(200)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.should.has.a.property('id','123');
+                    res.body.should.has.a.property('id', '123');
                     done();
                 });
         })
-        it('400 an invalid flow', function(done) {
+        it('400 an invalid flow', function (done) {
             request(app)
                 .post('/flow')
                 .set('Accept', 'application/json')
-                .send({id:'error'})
+                .send({
+                    id: 'error'
+                })
                 .expect(400)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.should.has.a.property('error','unexpected_error');
-                    res.body.should.has.a.property('message','Error: test error');
+                    res.body.should.has.a.property('error', 'unexpected_error');
+                    res.body.should.has.a.property('message', 'Error: test error');
 
                     done();
                 });
         })
     })
 
-    describe("update", function() {
+    describe("update", function () {
         var nodes;
-        before(function() {
+        before(function () {
             nodes = {
-                updateFlow: function(id,f) {
+                updateFlow: function (id, f) {
                     var err;
                     if (id === "123") {
                         return when.resolve()
@@ -144,79 +155,91 @@ describe("flow api", function() {
                 }
             };
             flow.init({
-                settings:{},
+                settings: {},
                 nodes: nodes,
-                log:{ audit: sinon.stub() }
+                log: {
+                    audit: sinon.stub()
+                }
             });
         })
 
-        it('updates an existing flow', function(done) {
-            sinon.spy(nodes,"updateFlow");
+        it('updates an existing flow', function (done) {
+            sinon.spy(nodes, "updateFlow");
             request(app)
                 .put('/flow/123')
                 .set('Accept', 'application/json')
-                .send({id:'123'})
+                .send({
+                    id: '123'
+                })
                 .expect(200)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.should.has.a.property('id','123');
+                    res.body.should.has.a.property('id', '123');
                     nodes.updateFlow.calledOnce.should.be.true();
                     nodes.updateFlow.lastCall.args[0].should.eql('123');
-                    nodes.updateFlow.lastCall.args[1].should.eql({id:'123'});
+                    nodes.updateFlow.lastCall.args[1].should.eql({
+                        id: '123'
+                    });
                     nodes.updateFlow.restore();
                     done();
                 });
         })
 
-        it('404s on an unknown flow', function(done) {
+        it('404s on an unknown flow', function (done) {
             request(app)
                 .put('/flow/unknown')
                 .set('Accept', 'application/json')
-                .send({id:'123'})
+                .send({
+                    id: '123'
+                })
                 .expect(404)
                 .end(done);
         })
 
-        it('400 on async update error', function(done) {
+        it('400 on async update error', function (done) {
             request(app)
                 .put('/flow/async_error')
                 .set('Accept', 'application/json')
-                .send({id:'123'})
+                .send({
+                    id: '123'
+                })
                 .expect(400)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.should.has.a.property('error','unexpected_error');
-                    res.body.should.has.a.property('message','Error: test error');
+                    res.body.should.has.a.property('error', 'unexpected_error');
+                    res.body.should.has.a.property('message', 'Error: test error');
                     done();
                 });
         })
 
-        it('400 on sync update error', function(done) {
+        it('400 on sync update error', function (done) {
             request(app)
                 .put('/flow/unexpected')
                 .set('Accept', 'application/json')
-                .send({id:'123'})
+                .send({
+                    id: '123'
+                })
                 .expect(400)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.should.has.a.property('error',500);
-                    res.body.should.has.a.property('message','Error');
+                    res.body.should.has.a.property('error', 500);
+                    res.body.should.has.a.property('message', 'Error');
                     done();
                 });
         })
     })
 
-    describe("delete", function() {
+    describe("delete", function () {
         var nodes;
-        before(function() {
+        before(function () {
             nodes = {
-                removeFlow: function(id) {
+                removeFlow: function (id) {
                     var err;
                     if (id === "123") {
                         return when.resolve()
@@ -232,18 +255,20 @@ describe("flow api", function() {
                 }
             };
             flow.init({
-                settings:{},
+                settings: {},
                 nodes: nodes,
-                log:{ audit: sinon.stub() }
+                log: {
+                    audit: sinon.stub()
+                }
             });
         })
 
-        it('updates an existing flow', function(done) {
-            sinon.spy(nodes,"removeFlow");
+        it('updates an existing flow', function (done) {
+            sinon.spy(nodes, "removeFlow");
             request(app)
                 .delete('/flow/123')
                 .expect(204)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
@@ -254,23 +279,23 @@ describe("flow api", function() {
                 });
         })
 
-        it('404s on an unknown flow', function(done) {
+        it('404s on an unknown flow', function (done) {
             request(app)
                 .delete('/flow/unknown')
                 .expect(404)
                 .end(done);
         })
 
-        it('400 on remove error', function(done) {
+        it('400 on remove error', function (done) {
             request(app)
                 .delete('/flow/unexpected')
                 .expect(400)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    res.body.should.has.a.property('error',500);
-                    res.body.should.has.a.property('message','Error');
+                    res.body.should.has.a.property('error', 500);
+                    res.body.should.has.a.property('message', 'Error');
                     done();
                 });
         })

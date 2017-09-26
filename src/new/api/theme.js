@@ -45,8 +45,9 @@ var runtime = null;
 var themeApp;
 
 module.exports = class Theme {
-    constructor(runtime) {
-        var settings = runtime.settings;
+    constructor(runtime = {}) {
+        var settings = runtime.settings || {};
+        this.settings = settings
         themeContext = clone(defaultContext);
         if (runtime.version) {
             themeContext.version = runtime.version();

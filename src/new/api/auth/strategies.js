@@ -33,6 +33,7 @@ var loginSignInWindow = 600000; // 10 minutes
 
 class AnonymousStrategy extends passport.Strategy {
     constructor() {
+        super()
         passport.Strategy.call(this);
         this.name = 'anon';
     }
@@ -54,8 +55,8 @@ class AnonymousStrategy extends passport.Strategy {
 module.exports = class Strategies {
     constructor(runtime) {
         this.log = runtime.log;
-        this.bearerStrategy.BearerStrategy = new BearerStrategy(bearerStrategy);
-        this.clientPasswordStrategy.ClientPasswordStrategy = new ClientPasswordStrategy(clientPasswordStrategy);
+        this.bearerStrategy.BearerStrategy = new BearerStrategy(this.bearerStrategy);
+        this.clientPasswordStrategy.ClientPasswordStrategy = new ClientPasswordStrategy(this.clientPasswordStrategy);
         this.anonymousStrategy = new AnonymousStrategy()
     }
 

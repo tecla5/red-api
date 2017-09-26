@@ -21,102 +21,153 @@ var express = require("express");
 var when = require("when");
 var fs = require("fs");
 var path = require("path");
-var api = require("../../../red/api");
 
-describe("api index", function() {
+// FIX: using Api instance
+var {
+    Api
+} = require(".")
+
+describe("api index", function () {
     var app;
 
-    describe("disables editor", function() {
-        before(function() {
-            api.init({},{
-                settings:{httpNodeRoot:true, httpAdminRoot: true,disableEditor:true, exportNodeSettings: function() {}},
-                events: {on:function(){},removeListener: function(){}},
-                log: {info:function(){},_:function(){}},
-                nodes: {paletteEditorEnabled: function(){return true}}
+    describe("disables editor", function () {
+        before(function () {
+            // FIX: using constructor instead of legacy init
+            new Api({}, {
+                settings: {
+                    httpNodeRoot: true,
+                    httpAdminRoot: true,
+                    disableEditor: true,
+                    exportNodeSettings: function () {}
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                },
+                log: {
+                    info: function () {},
+                    _: function () {}
+                },
+                nodes: {
+                    paletteEditorEnabled: function () {
+                        return true
+                    }
+                }
             });
             app = api.adminApp;
         });
 
-        it('does not serve the editor', function(done) {
+        it('does not serve the editor', function (done) {
             request(app)
                 .get("/")
-                .expect(404,done)
+                .expect(404, done)
         });
-        it('does not serve icons', function(done) {
+        it('does not serve icons', function (done) {
             request(app)
                 .get("/icons/default.png")
-                .expect(404,done)
+                .expect(404, done)
         });
-        it('serves settings', function(done) {
+        it('serves settings', function (done) {
             request(app)
                 .get("/settings")
-                .expect(200,done)
+                .expect(200, done)
         });
     });
 
-    describe("can serve auth", function() {
+    describe("can serve auth", function () {
         var mockList = [
-            'ui','nodes','flows','library','info','locales','credentials'
+            'ui', 'nodes', 'flows', 'library', 'info', 'locales', 'credentials'
         ]
-        before(function() {
-            mockList.forEach(function(m) {
-                sinon.stub(require("../../../red/api/"+m),"init",function(){});
+        before(function () {
+            mockList.forEach(function (m) {
+                sinon.stub(require("../../../red/api/" + m), "init", function () {});
             });
         });
-        after(function() {
-            mockList.forEach(function(m) {
-                require("../../../red/api/"+m).init.restore();
+        after(function () {
+            mockList.forEach(function (m) {
+                require("../../../red/api/" + m).init.restore();
             })
         });
-        before(function() {
-            api.init({},{
-                settings:{httpNodeRoot:true, httpAdminRoot: true, adminAuth:{type: "credentials",users:[],default:{permissions:"read"}}},
-                storage:{getSessions:function(){return when.resolve({})}},
-                events:{on:function(){},removeListener:function(){}}
+        before(function () {
+            new Api({}, {
+                settings: {
+                    httpNodeRoot: true,
+                    httpAdminRoot: true,
+                    adminAuth: {
+                        type: "credentials",
+                        users: [],
+                        default: {
+                            permissions: "read"
+                        }
+                    }
+                },
+                storage: {
+                    getSessions: function () {
+                        return when.resolve({})
+                    }
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                }
             });
             app = api.adminApp;
         });
 
-        it('it now serves auth', function(done) {
+        it('it now serves auth', function (done) {
             request(app)
                 .get("/auth/login")
                 .expect(200)
-                .end(function(err,res) {
-                    if (err) { return done(err); }
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
                     res.body.type.should.equal("credentials");
                     done();
                 });
         });
     });
 
-    describe("editor warns if runtime not started", function() {
+    describe("editor warns if runtime not started", function () {
         var mockList = [
-            'nodes','flows','library','info','theme','locales','credentials'
+            'nodes', 'flows', 'library', 'info', 'theme', 'locales', 'credentials'
         ]
-        before(function() {
-            mockList.forEach(function(m) {
-                sinon.stub(require("../../../red/api/"+m),"init",function(){});
+        before(function () {
+            mockList.forEach(function (m) {
+                sinon.stub(require("../../../red/api/" + m), "init", function () {});
             });
         });
-        after(function() {
-            mockList.forEach(function(m) {
-                require("../../../red/api/"+m).init.restore();
+        after(function () {
+            mockList.forEach(function (m) {
+                require("../../../red/api/" + m).init.restore();
             })
         });
 
-        it('serves the editor', function(done) {
+        it('serves the editor', function (done) {
             var errorLog = sinon.spy();
-            api.init({},{
-                log:{audit:function(){},error:errorLog},
-                settings:{httpNodeRoot:true, httpAdminRoot: true,disableEditor:false},
-                events:{on:function(){},removeListener:function(){}},
-                isStarted: function() { return false; } // <-----
+            api.init({}, {
+                log: {
+                    audit: function () {},
+                    error: errorLog
+                },
+                settings: {
+                    httpNodeRoot: true,
+                    httpAdminRoot: true,
+                    disableEditor: false
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                },
+                isStarted: function () {
+                    return false;
+                } // <-----
             });
             app = api.adminApp;
             request(app)
                 .get("/")
                 .expect(503)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
@@ -128,36 +179,47 @@ describe("api index", function() {
 
     });
 
-    describe("enables editor", function() {
+    describe("enables editor", function () {
 
         var mockList = [
-            'nodes','flows','library','info','theme','locales','credentials'
+            'nodes', 'flows', 'library', 'info', 'theme', 'locales', 'credentials'
         ]
-        before(function() {
-            mockList.forEach(function(m) {
-                sinon.stub(require("../../../red/api/"+m),"init",function(){});
+        before(function () {
+            mockList.forEach(function (m) {
+                sinon.stub(require("../../../red/api/" + m), "init", function () {});
             });
         });
-        after(function() {
-            mockList.forEach(function(m) {
-                require("../../../red/api/"+m).init.restore();
+        after(function () {
+            mockList.forEach(function (m) {
+                require("../../../red/api/" + m).init.restore();
             })
         });
 
-        before(function() {
-            api.init({},{
-                log:{audit:function(){}},
-                settings:{httpNodeRoot:true, httpAdminRoot: true,disableEditor:false},
-                events:{on:function(){},removeListener:function(){}},
-                isStarted: function() { return true; }
+        before(function () {
+            api.init({}, {
+                log: {
+                    audit: function () {}
+                },
+                settings: {
+                    httpNodeRoot: true,
+                    httpAdminRoot: true,
+                    disableEditor: false
+                },
+                events: {
+                    on: function () {},
+                    removeListener: function () {}
+                },
+                isStarted: function () {
+                    return true;
+                }
             });
             app = api.adminApp;
         });
-        it('serves the editor', function(done) {
+        it('serves the editor', function (done) {
             request(app)
                 .get("/")
                 .expect(200)
-                .end(function(err,res) {
+                .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
@@ -166,21 +228,21 @@ describe("api index", function() {
                     done();
                 });
         });
-        it('serves icons', function(done) {
+        it('serves icons', function (done) {
             request(app)
                 .get("/icons/inject.png")
                 .expect("Content-Type", /image\/png/)
-                .expect(200,done)
+                .expect(200, done)
         });
-        it('serves settings', function(done) {
+        it('serves settings', function (done) {
             request(app)
                 .get("/settings")
-                .expect(200,done)
+                .expect(200, done)
         });
-        it('handles page not there', function(done) {
+        it('handles page not there', function (done) {
             request(app)
                 .get("/foo")
-                .expect(404,done)
+                .expect(404, done)
         });
     });
 });

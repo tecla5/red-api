@@ -4,7 +4,8 @@ const Base = require('./base')
 
 module.exports = class Flow extends Base {
   constructor(server, runtime) {
-    super(runtime)
+    super(runtime = {})
+
     this.settings = runtime.settings;
     this.redNodes = runtime.nodes;
     this.log = runtime.log;

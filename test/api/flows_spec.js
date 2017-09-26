@@ -21,93 +21,118 @@ var bodyParser = require('body-parser');
 var sinon = require('sinon');
 var when = require('when');
 
-var flows = require("../../../red/api/flows");
+const api = require(".");
+var flows = api.flows
 
-describe("flows api", function() {
+describe("flows api", function () {
 
     var app;
 
-    before(function() {
+    before(function () {
         app = express();
         app.use(bodyParser.json());
-        app.get("/flows",flows.get);
-        app.post("/flows",flows.post);
+        app.get("/flows", flows.get);
+        app.post("/flows", flows.post);
     });
 
-    it('returns flow - v1', function(done) {
+    it('returns flow - v1', function (done) {
         flows.init({
             settings: {},
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
-                getFlows: function() { return {rev:"123",flows:[1,2,3]}; }
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
+                getFlows: function () {
+                    return {
+                        rev: "123",
+                        flows: [1, 2, 3]
+                    };
+                }
             }
         });
         request(app)
             .get('/flows')
             .set('Accept', 'application/json')
             .expect(200)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
                 try {
                     res.body.should.have.lengthOf(3);
                     done();
-                } catch(e) {
+                } catch (e) {
                     return done(e);
                 }
             });
     });
-    it('returns flow - v2', function(done) {
+    it('returns flow - v2', function (done) {
         flows.init({
             settings: {},
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
-                getFlows: function() { return {rev:"123",flows:[1,2,3]}; }
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
+                getFlows: function () {
+                    return {
+                        rev: "123",
+                        flows: [1, 2, 3]
+                    };
+                }
             }
         });
         request(app)
             .get('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-API-Version','v2')
+            .set('Node-RED-API-Version', 'v2')
             .expect(200)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
                 try {
-                    res.body.should.have.a.property('rev','123');
+                    res.body.should.have.a.property('rev', '123');
                     res.body.should.have.a.property('flows');
                     res.body.flows.should.have.lengthOf(3);
                     done();
-                } catch(e) {
+                } catch (e) {
                     return done(e);
                 }
             });
     });
-    it('returns flow - bad version', function(done) {
+    it('returns flow - bad version', function (done) {
         request(app)
             .get('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-API-Version','xxx')
+            .set('Node-RED-API-Version', 'xxx')
             .expect(400)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
                 try {
-                    res.body.should.have.a.property('code','invalid_api_version');
+                    res.body.should.have.a.property('code', 'invalid_api_version');
                     done();
-                } catch(e) {
+                } catch (e) {
                     return done(e);
                 }
             });
     });
-    it('sets flows - default - v1', function(done) {
-        var setFlows = sinon.spy(function() { return when.resolve();});
+    it('sets flows - default - v1', function (done) {
+        var setFlows = sinon.spy(function () {
+            return when.resolve();
+        });
         flows.init({
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
                 setFlows: setFlows
             }
         });
@@ -115,7 +140,7 @@ describe("flows api", function() {
             .post('/flows')
             .set('Accept', 'application/json')
             .expect(204)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
@@ -124,20 +149,26 @@ describe("flows api", function() {
                 done();
             });
     });
-    it('sets flows - non-default - v1', function(done) {
-        var setFlows = sinon.spy(function() { return when.resolve();});
+    it('sets flows - non-default - v1', function (done) {
+        var setFlows = sinon.spy(function () {
+            return when.resolve();
+        });
         flows.init({
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
                 setFlows: setFlows
             }
         });
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-Deployment-Type','nodes')
+            .set('Node-RED-Deployment-Type', 'nodes')
             .expect(204)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
@@ -147,12 +178,23 @@ describe("flows api", function() {
             });
     });
 
-    it('set flows - rejects mismatched revision - v2', function(done) {
-        var setFlows = sinon.spy(function() { return when.resolve();});
-        var getFlows = sinon.spy(function() { return {rev:123,flows:[1,2,3]}});
+    it('set flows - rejects mismatched revision - v2', function (done) {
+        var setFlows = sinon.spy(function () {
+            return when.resolve();
+        });
+        var getFlows = sinon.spy(function () {
+            return {
+                rev: 123,
+                flows: [1, 2, 3]
+            }
+        });
         flows.init({
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
                 setFlows: setFlows,
                 getFlows: getFlows
             }
@@ -160,23 +202,37 @@ describe("flows api", function() {
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-API-Version','v2')
-            .send({rev:456,flows:[4,5,6]})
+            .set('Node-RED-API-Version', 'v2')
+            .send({
+                rev: 456,
+                flows: [4, 5, 6]
+            })
             .expect(409)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("code","version_mismatch");
+                res.body.should.have.property("code", "version_mismatch");
                 done();
             });
     });
-    it('set flows - rev provided - v2', function(done) {
-        var setFlows = sinon.spy(function() { return when.resolve(456);});
-        var getFlows = sinon.spy(function() { return {rev:123,flows:[1,2,3]}});
+    it('set flows - rev provided - v2', function (done) {
+        var setFlows = sinon.spy(function () {
+            return when.resolve(456);
+        });
+        var getFlows = sinon.spy(function () {
+            return {
+                rev: 123,
+                flows: [1, 2, 3]
+            }
+        });
         flows.init({
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
                 setFlows: setFlows,
                 getFlows: getFlows
             }
@@ -184,23 +240,37 @@ describe("flows api", function() {
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-API-Version','v2')
-            .send({rev:123,flows:[4,5,6]})
+            .set('Node-RED-API-Version', 'v2')
+            .send({
+                rev: 123,
+                flows: [4, 5, 6]
+            })
             .expect(200)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("rev",456);
+                res.body.should.have.property("rev", 456);
                 done();
             });
     });
-    it('set flows - no rev provided - v2', function(done) {
-        var setFlows = sinon.spy(function() { return when.resolve(456);});
-        var getFlows = sinon.spy(function() { return {rev:123,flows:[1,2,3]}});
+    it('set flows - no rev provided - v2', function (done) {
+        var setFlows = sinon.spy(function () {
+            return when.resolve(456);
+        });
+        var getFlows = sinon.spy(function () {
+            return {
+                rev: 123,
+                flows: [1, 2, 3]
+            }
+        });
         flows.init({
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
                 setFlows: setFlows,
                 getFlows: getFlows
             }
@@ -208,49 +278,57 @@ describe("flows api", function() {
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-API-Version','v2')
-            .send({flows:[4,5,6]})
+            .set('Node-RED-API-Version', 'v2')
+            .send({
+                flows: [4, 5, 6]
+            })
             .expect(200)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("rev",456);
+                res.body.should.have.property("rev", 456);
                 done();
             });
     });
-    it('sets flow - bad version', function(done) {
+    it('sets flow - bad version', function (done) {
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-API-Version','xxx')
+            .set('Node-RED-API-Version', 'xxx')
             .expect(400)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
                 try {
-                    res.body.should.have.a.property('code','invalid_api_version');
+                    res.body.should.have.a.property('code', 'invalid_api_version');
                     done();
-                } catch(e) {
+                } catch (e) {
                     return done(e);
                 }
             });
     });
-    it('reloads flows', function(done) {
-        var loadFlows = sinon.spy(function() { return when.resolve(); });
+    it('reloads flows', function (done) {
+        var loadFlows = sinon.spy(function () {
+            return when.resolve();
+        });
         flows.init({
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
                 loadFlows: loadFlows
             }
         });
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
-            .set('Node-RED-Deployment-Type','reload')
+            .set('Node-RED-Deployment-Type', 'reload')
             .expect(204)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
@@ -259,22 +337,28 @@ describe("flows api", function() {
             });
     });
 
-    it('returns error when set fails', function(done) {
+    it('returns error when set fails', function (done) {
         flows.init({
-            log:{warn:function(){},_:function(){},audit:function(){}},
-            nodes:{
-                setFlows: function() { return when.reject(new Error("expected error")); }
+            log: {
+                warn: function () {},
+                _: function () {},
+                audit: function () {}
+            },
+            nodes: {
+                setFlows: function () {
+                    return when.reject(new Error("expected error"));
+                }
             }
         });
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
             .expect(500)
-            .end(function(err,res) {
+            .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                res.body.should.have.property("message","expected error");
+                res.body.should.have.property("message", "expected error");
                 done();
             });
     });
