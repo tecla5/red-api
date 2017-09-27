@@ -2,14 +2,10 @@
 
 Stand-alone NodeRed API extracted from [node-red](https://github.com/node-red/node-red/tree/master/red) application.
 
-The goal of this module is to refactor and replace the "old school" API with a modern API, using classes, polymorphism and modern Javascript.
+## Community
 
-The `/legacy` folder contains the legacy API.
-The `/new` folder contains the new refactored API, using latest Javascript syntax.
-
-The `/api` and `/runtime` folders that form the API can be found under the `/red` folder in `node-red`.
-
-The old (legacy) code uses callbacks for handling asynchronous flow. In time we want to transition to modern `async/await` constructs.
+- [Slack](https://nodered.org/slack/)
+- [Github organisation](https://github.com/node-red)
 
 ## Pre-requisites
 
@@ -30,6 +26,17 @@ Install [mocha](mochajs.org/) test runner as a global Node module (makes mocha b
 Run a test such as:
 
 `$ mocha test/api/flows_spec.js`
+
+## Goals
+
+The goal of this module is to refactor and replace the "old school" API with a modern API, using classes, polymorphism and modern Javascript.
+
+The `/legacy` folder contains the legacy API.
+The `/new` folder contains the new refactored API, using latest Javascript syntax.
+
+The `/api` and `/runtime` folders that form the API can be found under the `/red` folder in `node-red`.
+
+The old (legacy) code uses callbacks for handling asynchronous flow. In time we want to transition to modern `async/await` constructs.
 
 ## New API
 
