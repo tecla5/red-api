@@ -27,23 +27,28 @@ Run a test such as:
 
 `$ mocha test/api/flows_spec.js`
 
-## Goals
+## Refactoring
 
 The goal of this module is to refactor and replace the "old school" API with a modern API, using classes, polymorphism and modern Javascript.
 
 The `/legacy` folder contains the legacy API.
 The `/new` folder contains the new refactored API, using latest Javascript syntax.
 
-The `/api` and `/runtime` folders that form the API can be found under the `/red` folder in `node-red`.
-
 The old (legacy) code uses callbacks for handling asynchronous flow. In time we want to transition to modern `async/await` constructs.
+
+The main objective is to make the refactored classes work like in the original.
+
+Write unit tests to confirm the class struture works like the original code, keeping orinal functionality in the functions with minimal intrusion. Then step by step improve the code to use modern Javascript, using a Test Driven approach.
+
+### Strategy
+
+The best and easiest strategy would be to start with the simplest classes with least dependencies and then gradually build from there.
+
+Many of the tests in `test/api/auth` are already passing and these classes are pretty isolated and should be pretty easy to completely refactor to modern Javascript.
 
 ## New API
 
 A new class-based API can be found in `src/new`
-
-- `api`
-- `runtime`
 
 ### API classes
 
@@ -72,23 +77,19 @@ See `src/new/api/auth` folder
 - `Tokens` user tokens
 - `Users` user
 
-## Objective
+### Roadmap 1.0
 
-The main objective is to make the refactored classes work like in the original.
-
-Write unit tests to confirm the class struture works like the original code, keeping orinal functionality in the functions with minimal intrusion. Then step by step improve the code to use modern Javascript, using a Test Driven approach.
-
-## Refactoring Strategy
-
-The best and easiest strategy would be to start with the simplest classes with least dependencies and then gradually build from there.
-
-Many of the tests in `test/api/auth` are already passing and these classes are pretty isolated and should be pretty easy to completely refactor to modern Javascript.
+The official [Node-red Roadmap 1.0](https://nodered.org/blog/2017/07/17/roadmap-to-1-dot-0) has a similar objective of splitting the main project into 3 modules.
 
 ## Editor
 
-The [Node-red editor]((https://github.com/tecla5/red-editor)) is extracted and refactored using a similar approach.
+The [Node-red editor](https://github.com/tecla5/red-editor) is extracted and refactored using a similar approach.
 
 These two refactored modules should then be used by the [NodeRed Vue app](https://github.com/tecla5/nodered-vue).
+
+## Runtime
+
+The [Node-red runtime](https://github.com/tecla5/red-runtime) is extracted and refactored using a similar approach. The runtime uses the Editor and the API and "binds it all together".
 
 ## Rendering the Editor
 
