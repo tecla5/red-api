@@ -19,7 +19,8 @@ var util = require('util');
 var readRE = /^((.+)\.)?read$/
 var writeRE = /^((.+)\.)?write$/
 
-module.exports = class Permissions {
+
+const Permissions = {
     hasPermission(userScope, permission) {
         if (permission === '') {
             return true;
@@ -61,3 +62,5 @@ module.exports = class Permissions {
         return false;
     }
 }
+
+module.exports = Permissions

@@ -22,7 +22,7 @@ var i18n;
 var settings;
 var events;
 
-module.exports = class Nodes {
+class Nodes {
     constructor(runtime) {
         this.redNodes = runtime.nodes;
         this.log = runtime.log;
@@ -444,3 +444,9 @@ function putNode(node, enabled) {
 
     return promise;
 }
+
+Nodes.init = function (runtime) {
+    return new Nodes(runtime)
+}
+
+module.exports = Nodes

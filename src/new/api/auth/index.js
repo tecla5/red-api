@@ -229,6 +229,10 @@ class Auth {
   }
 }
 
+Auth.init = function (runtime) {
+  return new Auth(runtime)
+}
+
 module.exports = {
   Auth,
   Clients,

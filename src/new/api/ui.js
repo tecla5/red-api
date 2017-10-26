@@ -26,7 +26,7 @@ var assetsDir = path.resolve(__dirname + '/../../../assets')
 var templateDir = path.resolve(assetsDir, 'templates/new');
 var editorTemplate;
 
-module.exports = class Ui {
+class Ui {
     constructor(runtime) {
         redNodes = runtime.nodes;
         editorTemplate = fs.readFileSync(path.join(templateDir, 'index.mst'), 'utf8');
@@ -76,3 +76,9 @@ module.exports = class Ui {
         res.send(Mustache.render(editorTemplate, theme.context()));
     }
 }
+
+Ui.init = function (runtime) {
+    return new Ui(runtime)
+}
+
+module.exports = Ui

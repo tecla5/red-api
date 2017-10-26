@@ -236,6 +236,9 @@ class Api {
   }
 }
 
+Api.init = function (server, runtime) {
+  return new Api(server, runtime)
+}
 
 module.exports = {
   Api,

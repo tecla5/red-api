@@ -18,7 +18,7 @@ var log;
 var redNodes;
 var settings;
 
-module.exports = class Flows {
+class Flows {
     constructor(runtime) {
 
         this.settings = runtime.settings;
@@ -128,3 +128,9 @@ module.exports = class Flows {
         }
     }
 }
+
+Flows.init = function (runtime) {
+    return new Flows(runtime)
+}
+
+module.exports = Flows

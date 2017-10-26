@@ -18,7 +18,7 @@ var path = require('path');
 var i18n;
 var redNodes;
 
-module.exports = class Locales {
+class Locales {
     constructor(runtime) {
         this.i18n = runtime.i18n;
         this.redNodes = runtime.nodes;
@@ -60,3 +60,9 @@ module.exports = class Locales {
         res.json(result);
     }
 }
+
+Locales.init = function (runtime) {
+    return new Locales(runtime)
+}
+
+module.exports = Locales

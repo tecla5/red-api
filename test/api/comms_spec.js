@@ -25,7 +25,7 @@ var WebSocket = require('ws');
 
 const api = require('.');
 
-var comms = api.instance.comms
+var Comms = api.instance.comms
 var Users = api.Users
 var Tokens = api.Tokens
 
@@ -37,14 +37,17 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
+        let users, comms
         before(function (done) {
-            sinon.stub(Users, 'default', function () {
+            users = Users.init()
+
+            sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {},
                 log: {
                     warn: function () {},
@@ -67,7 +70,7 @@ describe('api/comms', function () {
         });
 
         after(function () {
-            Users.default.restore();
+            users.default.restore();
             comms.stop();
         });
 
@@ -82,17 +85,13 @@ describe('api/comms', function () {
         it('publishes message after subscription', function (done) {
             var ws = new WebSocket(url);
             ws.on('open', function () {
-                ws.send('{'
-                    subscribe ':'
-                    topic1 '}');
+                ws.send(`{"subscribe ": "topic1 "}`);
                 comms.publish('topic1', 'foo');
             });
             ws.on('message', function (msg) {
-                msg.should.equal('{'
-                    topic ':'
-                    topic1 ','
-                    data ':'
-                    foo '}');
+                msg.should.equal(`{"topic ": "
+                    topic1 ", "data ": "
+                    foo "}`);
                 ws.close();
                 done();
             });
@@ -102,16 +101,10 @@ describe('api/comms', function () {
             comms.publish('topic2', 'bar', true);
             var ws = new WebSocket(url);
             ws.on('open', function () {
-                ws.send('{'
-                    subscribe ':'
-                    topic2 '}');
+                ws.send(`{"subscribe ":"topic2 "}`);
             });
             ws.on('message', function (msg) {
-                msg.should.equal('{'
-                    topic ':'
-                    topic2 ','
-                    data ':'
-                    bar '}');
+                msg.should.equal(`{"topic ": "topic2 ","data ": "bar "}`);
                 ws.close();
                 done();
             });
@@ -122,17 +115,11 @@ describe('api/comms', function () {
             comms.publish('topic3', 'non-retained');
             var ws = new WebSocket(url);
             ws.on('open', function () {
-                ws.send('{'
-                    subscribe ':'
-                    topic3 '}');
+                ws.send(`{"subscribe ": "topic3 "}`);
                 comms.publish('topic3', 'new');
             });
             ws.on('message', function (msg) {
-                msg.should.equal('{'
-                    topic ':'
-                    topic3 ','
-                    data ':'
-                    new '}');
+                msg.should.equal(`{"topic ":"topic3 ","data ":"new "}`);
                 ws.close();
                 done();
             });
@@ -143,17 +130,11 @@ describe('api/comms', function () {
             ws.on('open', function () {
                 ws.send('not json');
                 ws.send('[]');
-                ws.send('{'
-                    subscribe ':'
-                    topic3 '}');
+                ws.send(`{"subscribe ":"topic3 "}`);
                 comms.publish('topic3', 'correct');
             });
             ws.on('message', function (msg) {
-                msg.should.equal('{'
-                    topic ':'
-                    topic3 ','
-                    data ':'
-                    correct '}');
+                msg.should.equal(`{"topic ":"topic3 ","data ":"correct "}`);
                 ws.close();
                 done();
             });
@@ -166,18 +147,12 @@ describe('api/comms', function () {
         it.skip('receives message on correct topic', function (done) {
             var ws = new WebSocket(url);
             ws.on('open', function () {
-                ws.send('{'
-                    subscribe ':'
-                    topic4 '}');
+                ws.send(`{"subscribe ":"topic4 "}`);
                 comms.publish('topic5', 'foo');
                 comms.publish('topic4', 'bar');
             });
             ws.on('message', function (msg) {
-                msg.should.equal('{'
-                    topic ':'
-                    topic4 ','
-                    data ':'
-                    bar '}');
+                msg.should.equal(`{"topic ":"topic4 ","data ":"bar "}`);
                 ws.close();
                 done();
             });
@@ -189,14 +164,16 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
+        let users, comms
         before(function (done) {
-            sinon.stub(Users, 'default', function () {
+            users = Users.init()
+            sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {
                     disableEditor: true
                 },
@@ -221,7 +198,7 @@ describe('api/comms', function () {
         });
 
         after(function () {
-            Users.default.restore();
+            users.default.restore();
             comms.stop();
         });
 
@@ -242,14 +219,16 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
+        let user, comms;
         before(function (done) {
-            sinon.stub(Users, 'default', function () {
+            users = Users.init()
+            sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {
                     httpAdminRoot: '/adminPath'
                 },
@@ -274,7 +253,7 @@ describe('api/comms', function () {
         });
 
         after(function () {
-            Users.default.restore();
+            users.default.restore();
             comms.stop();
         });
 
@@ -295,14 +274,16 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
+        let user, comms;
         before(function (done) {
-            sinon.stub(Users, 'default', function () {
+            users = Users.init()
+            sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {
                     httpAdminRoot: '/adminPath'
                 },
@@ -327,7 +308,7 @@ describe('api/comms', function () {
         });
 
         after(function () {
-            Users.default.restore();
+            users.default.restore();
             comms.stop();
         });
 
@@ -348,14 +329,16 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
+        let user, comms;
         before(function (done) {
-            sinon.stub(Users, 'default', function () {
+            users = Users.init()
+            sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {
                     httpAdminRoot: 'adminPath'
                 },
@@ -380,7 +363,7 @@ describe('api/comms', function () {
         });
 
         after(function () {
-            Users.default.restore();
+            users.default.restore();
             comms.stop();
         });
 
@@ -401,14 +384,16 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
+        let user, comms;
         before(function (done) {
-            sinon.stub(Users, 'default', function () {
+            users = Users.init()
+            sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {
                     webSocketKeepAliveTime: 100
                 },
@@ -432,7 +417,7 @@ describe('api/comms', function () {
             });
         });
         after(function () {
-            Users.default.restore();
+            users.default.restore();
             comms.stop();
         });
         it('are sent', function (done) {
@@ -454,9 +439,7 @@ describe('api/comms', function () {
             var count = 0;
             var interval;
             ws.on('open', function () {
-                ws.send('{'
-                    subscribe ':'
-                    foo '}');
+                ws.send(`{"subscribe ":"foo "}`);
                 interval = setInterval(function () {
                     comms.publish('foo', 'bar');
                 }, 50);
@@ -485,8 +468,10 @@ describe('api/comms', function () {
         var getDefaultUser;
         var getUser;
         var getToken;
+        let user, comms;
         before(function (done) {
-            getDefaultUser = sinon.stub(Users, 'default', function () {
+            users = Users.init()
+            getDefaultUser = sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             getUser = sinon.stub(Users, 'get', function (username) {
@@ -518,7 +503,7 @@ describe('api/comms', function () {
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {
                     adminAuth: {}
                 },
@@ -553,9 +538,7 @@ describe('api/comms', function () {
             var count = 0;
             var interval;
             ws.on('open', function () {
-                ws.send('{'
-                    subscribe ':'
-                    foo '}');
+                ws.send(`{"subscribe ":"foo "}`);
             });
             ws.on('close', function () {
                 done();
@@ -566,26 +549,16 @@ describe('api/comms', function () {
             var ws = new WebSocket(url);
             var received = 0;
             ws.on('open', function () {
-                ws.send('{'
-                    auth ':'
-                    1234 '}');
+                ws.send(`{"auth ":"1234 "}`);
             });
             ws.on('message', function (msg) {
                 received++;
                 if (received == 1) {
-                    msg.should.equal('{'
-                        auth ':'
-                        ok '}');
-                    ws.send('{'
-                        subscribe ':'
-                        foo '}');
+                    msg.should.equal(`{"auth ":"ok "}`);
+                    ws.send(`{"subscribe ":"foo "}`);
                     comms.publish('foo', 'correct');
                 } else {
-                    msg.should.equal('{'
-                        topic ':'
-                        foo ','
-                        data ':'
-                        correct '}');
+                    msg.should.equal(`{"topic ":"foo ","data ":"correct "}`);
                     ws.close();
                 }
             });
@@ -604,9 +577,7 @@ describe('api/comms', function () {
             var ws = new WebSocket(url);
             var received = 0;
             ws.on('open', function () {
-                ws.send('{'
-                    auth ':'
-                    2345 '}');
+                ws.send(`{"auth ":"2345 "}`);
             });
             ws.on('close', function () {
                 done();
@@ -616,9 +587,7 @@ describe('api/comms', function () {
             var ws = new WebSocket(url);
             var received = 0;
             ws.on('open', function () {
-                ws.send('{'
-                    auth ':'
-                    5678 '}');
+                ws.send(`{"auth ":"5678 "}`);
             });
             ws.on('close', function () {
                 done();
@@ -631,8 +600,10 @@ describe('api/comms', function () {
         var url;
         var port;
         var getDefaultUser;
+        let user, comms;
         before(function (done) {
-            getDefaultUser = sinon.stub(Users, 'default', function () {
+            users = Users.init()
+            getDefaultUser = sinon.stub(users, 'default', function () {
                 return when.resolve({
                     permissions: 'read'
                 });
@@ -673,19 +644,13 @@ describe('api/comms', function () {
             var count = 0;
             var interval;
             ws.on('open', function () {
-                ws.send('{'
-                    subscribe ':'
-                    foo '}');
+                ws.send(`{"subscribe ":"foo "}`);
                 setTimeout(function () {
                     comms.publish('foo', 'correct');
                 }, 200);
             });
             ws.on('message', function (msg) {
-                msg.should.equal('{'
-                    topic ':'
-                    foo ','
-                    data ':'
-                    correct '}');
+                msg.should.equal(`{"topic ":"foo ","data ":"correct "}`);
                 count++;
                 ws.close();
             });

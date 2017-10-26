@@ -68,7 +68,7 @@ class Api {
 }
 
 
-module.exports = class Users {
+class Users {
     constructor(config = {}) {
         var users = {}
         var passwords = {}
@@ -129,3 +129,9 @@ module.exports = class Users {
         return this.api.default();
     }
 };
+
+Users.init = function (config = {}) {
+    return new Users(config)
+}
+
+module.exports = Users

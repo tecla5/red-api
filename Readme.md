@@ -27,6 +27,56 @@ Run a test such as:
 
 `$ mocha test/api/flows_spec.js`
 
+## Linking inter-dependent projects
+
+During development it is *highly* recommended to `npm link` the main node-red depedencies, such as `red-runtime`:
+
+- `git clone` [red-api](https://github.com/tecla5/red-api) repo
+- `git clone` [red-runtime](https://github.com/tecla5/red-runtime) repo
+- run `$ npm link` in your local `red-runtime` root folder to link it in your local package registry
+- run `npm link red-runtime` in your clone of `red-api`
+
+```bash
+✔ ~/repos/tecla5/red-runtime [master|✔]
+21:54 $ npm link
+// ...
+
+✔ ~/repos/tecla5/red-runtime [master|✔]
+21:54 $ npm link
+
+✔ ~/repos/tecla5/red-runtime [master|✚ 1]
+22:00 $ npm link red-api
+/Users/kristianmandrup/repos/tecla5/red-runtime/node_modules/red-api -> /usr/local/lib/node_modules/red-api -> /Users/kristianmandrup/repos/tecla5/red-api
+
+✔ ~/repos/tecla5/red-api [master|✚ 1]
+21:59 $ npm link red-runtime
+/Users/kristianmandrup/repos/tecla5/red-api/node_modules/red-runtime -> /usr/local/lib/node_modules/red-runtime -> /Users/kristianmandrup/repos/tecla5/red-runtime
+```
+
+## Lerna project
+
+A better approach would be to create a [lerna project](lernajs.io/) with both `red-api` and `red-runtime` included as packages and have lerna link them for you.
+
+See [red-ui](https://github.com/tecla5/red-ui) for a sample lerna project using this approach.
+
+```bash
+lerna.json
+/packages
+    /red-api
+        /node_modules
+            /red-runtime (symbolic link)
+        /src
+        /test
+        ...
+
+    /red-runtime
+        /node_modules
+            /red-api (symbolic link)
+        /src
+        /test
+        ...
+```
+
 ## Refactoring
 
 The goal of this module is to refactor and replace the "old school" API with a modern API, using classes, polymorphism and modern Javascript.
@@ -45,6 +95,25 @@ Write unit tests to confirm the class struture works like the original code, kee
 The best and easiest strategy would be to start with the simplest classes with least dependencies and then gradually build from there.
 
 Many of the tests in `test/api/auth` are already passing and these classes are pretty isolated and should be pretty easy to completely refactor to modern Javascript.
+
+### Sample test refatoring
+
+The `comms_spec.js` is a good example. Here we use the new class factory method `Users.init` to create a `users` instance. Same goes for `Comms`.
+We define the instance vars `let users, comms` in the top scope of the test so they are available for all the tests (ie. `it` scopes) within.
+
+```js
+let users, comms
+before(function (done) {
+    users = Users.init()
+
+    sinon.stub(users, 'default', function () {
+        return when.resolve(null);
+    });
+    server = http.createServer(function (req, res) {
+        app(req, res)
+    });
+    comms = Comms.init(server, {
+```
 
 ## New API
 

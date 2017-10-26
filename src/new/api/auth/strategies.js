@@ -53,7 +53,7 @@ class AnonymousStrategy extends passport.Strategy {
     }
 }
 
-module.exports = class Strategies {
+class Strategies {
     constructor(runtime) {
         this.log = runtime.log;
         this.bearerStrategy.BearerStrategy = new BearerStrategy(this.bearerStrategy);
@@ -180,3 +180,9 @@ module.exports = class Strategies {
         });
     }
 }
+
+Strategies.init = function (runtime) {
+    return new Strategies(runtime)
+}
+
+module.exports = Strategies

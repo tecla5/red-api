@@ -1,8 +1,8 @@
 const Base = require('./base')
 
-// Credentials middleware
+// Flow middleware
 
-module.exports = class Flow extends Base {
+class Flow extends Base {
   constructor(server, runtime) {
     super(runtime = {})
 
@@ -11,7 +11,7 @@ module.exports = class Flow extends Base {
     this.log = runtime.log;
   }
 
-  // extract credentials from request and send in response
+  // extract Flow from request and send in response
   process(req, res) {
     this.id = req.params.id;
     this.flow = req.body;
@@ -36,3 +36,9 @@ module.exports = class Flow extends Base {
     return this.redNodes.removeFlow(this.id)
   }
 }
+
+Flow.init = function (server, runtime) {
+  return new Flow(server, runtime)
+}
+
+module.exports = Flow

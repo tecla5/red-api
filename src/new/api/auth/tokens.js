@@ -25,7 +25,7 @@ function generateToken(length) {
     return token.join('');
 }
 
-module.exports = class Tokens {
+class Tokens {
     constructor(adminAuthSettings = {}, _storage) {
         this.storage = _storage;
         this.sessionExpiryTime = adminAuthSettings.sessionExpiryTime || 604800; // 1 week in seconds
@@ -106,3 +106,9 @@ module.exports = class Tokens {
         });
     }
 }
+
+Tokens.init = function (settings, storage) {
+    return new Tokens(settings, storage)
+}
+
+module.exports = Tokens

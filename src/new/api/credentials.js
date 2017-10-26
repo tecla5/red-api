@@ -2,7 +2,7 @@ const Base = require('./base')
 
 // Credentials middleware
 
-module.exports = class Credentials extends Base {
+class Credentials extends Base {
   constructor(server, runtime) {
     super(runtime)
   }
@@ -14,3 +14,9 @@ module.exports = class Credentials extends Base {
     // TODO
   }
 }
+
+Credentials.init = function (server, runtime) {
+  return new Credentials(server, runtime)
+}
+
+module.exports = Credentials

@@ -1,6 +1,6 @@
 const Base = require('./base')
 
-module.exports = class Communications extends Base {
+class Communications extends Base {
   constructor(server, runtime) {
     super(runtime)
     this.server = server
@@ -12,3 +12,9 @@ module.exports = class Communications extends Base {
 
   publish(topic, data, retain) {}
 }
+
+Communications.init = function (server, runtime) {
+  return new Communications(server, runtime)
+}
+
+module.exports = Communications

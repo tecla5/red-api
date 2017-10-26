@@ -24,7 +24,7 @@ var redNodes;
 var needsPermission = require('./auth').needsPermission;
 
 
-module.exports = class Library {
+class Library {
     constructor(app, runtime) {
         this.redApp = app;
         this.log = runtime.log;
@@ -246,3 +246,9 @@ function createLibrary(type) {
         });
     }
 }
+
+Library.init = function (runtime) {
+    return new Library(runtime)
+}
+
+module.exports = Library

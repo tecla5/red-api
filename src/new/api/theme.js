@@ -44,7 +44,7 @@ var runtime = null;
 
 var themeApp;
 
-module.exports = class Theme {
+class Theme {
     constructor(runtime = {}) {
         var settings = runtime.settings || {};
         this.settings = settings
@@ -199,3 +199,9 @@ function serveFilesFromTheme(themeValue, themeApp, directory) {
     }
     return result
 }
+
+Theme.init = function (runtime) {
+    return new Theme(runtime)
+}
+
+module.exports = Theme

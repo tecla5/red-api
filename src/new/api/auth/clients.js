@@ -26,7 +26,7 @@ var clients = [{
     }
 ];
 
-module.exports = class Clients {
+const Clients = {
     get(id) {
         for (var i = 0; i < clients.length; i++) {
             if (clients[i].id == id) {
@@ -36,3 +36,5 @@ module.exports = class Clients {
         return when.resolve(null);
     }
 }
+
+module.exports = Clients

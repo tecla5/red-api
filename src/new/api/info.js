@@ -16,7 +16,7 @@
 var Theme = require('./theme');
 var util = require('util');
 
-module.exports = class Info {
+class Info {
     constructor(_runtime = {}) {
         this.runtime = _runtime;
         this._settings = this.runtime.settings;
@@ -56,3 +56,9 @@ module.exports = class Info {
         res.json(safeSettings);
     }
 }
+
+Info.init = function (runtime) {
+    return new Info(runtime)
+}
+
+module.exports = Info
