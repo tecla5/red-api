@@ -61,7 +61,7 @@ class Strategies {
         this.anonymousStrategy = new AnonymousStrategy()
 
         this.tokens = new Tokens()
-        this.clients = new Clients()
+        this.clients = Clients
         this.users = new Users()
     }
 

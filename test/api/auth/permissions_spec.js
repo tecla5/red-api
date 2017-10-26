@@ -23,7 +23,7 @@ var {
 describe('Auth permissions', function () {
     describe('hasPermission', function () {
         before(() => {
-            permissions = new Permissions()
+            permissions = Permissions
         })
 
 

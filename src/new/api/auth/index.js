@@ -45,7 +45,7 @@ class Auth {
       this.tokens = new Tokens(this.settings.adminAuth, runtime.storage);
       this.strategies = new Strategies(runtime);
     }
-    this.permissions = new Permissions()
+    this.permissions = Permissions
   }
 
   needsPermission(permission) {

@@ -25,7 +25,8 @@ var WebSocket = require('ws');
 
 const api = require('.');
 
-var Comms = api.instance.comms
+var comms = api.instance.comms
+var Comms = api.Comms
 var Users = api.Users
 var Tokens = api.Tokens
 
@@ -219,7 +220,7 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
-        let user, comms;
+        let users, comms;
         before(function (done) {
             users = Users.init()
             sinon.stub(users, 'default', function () {
@@ -274,7 +275,7 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
-        let user, comms;
+        let users, comms;
         before(function (done) {
             users = Users.init()
             sinon.stub(users, 'default', function () {
@@ -329,7 +330,7 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
-        let user, comms;
+        let users, comms;
         before(function (done) {
             users = Users.init()
             sinon.stub(users, 'default', function () {
@@ -384,7 +385,7 @@ describe('api/comms', function () {
         var server;
         var url;
         var port;
-        let user, comms;
+        let users, comms;
         before(function (done) {
             users = Users.init()
             sinon.stub(users, 'default', function () {
@@ -468,13 +469,16 @@ describe('api/comms', function () {
         var getDefaultUser;
         var getUser;
         var getToken;
-        let user, comms;
+        let users, comms, tokens, settings;
         before(function (done) {
+            settings = {
+                // ???
+            };
             users = Users.init()
             getDefaultUser = sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
-            getUser = sinon.stub(Users, 'get', function (username) {
+            getUser = sinon.stub(users, 'get', function (username) {
                 if (username == 'fred') {
                     return when.resolve({
                         permissions: 'read'
@@ -483,7 +487,8 @@ describe('api/comms', function () {
                     return when.resolve(null);
                 }
             });
-            getToken = sinon.stub(Tokens, 'get', function (token) {
+            tokens = Tokens.init(settings)
+            getToken = sinon.stub(tokens, 'get', function (token) {
                 if (token == '1234') {
                     return when.resolve({
                         user: 'fred',
@@ -600,7 +605,7 @@ describe('api/comms', function () {
         var url;
         var port;
         var getDefaultUser;
-        let user, comms;
+        let users, comms;
         before(function (done) {
             users = Users.init()
             getDefaultUser = sinon.stub(users, 'default', function () {
@@ -611,7 +616,7 @@ describe('api/comms', function () {
             server = http.createServer(function (req, res) {
                 app(req, res)
             });
-            comms.init(server, {
+            comms = Comms.init(server, {
                 settings: {
                     adminAuth: {}
                 },
