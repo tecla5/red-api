@@ -139,7 +139,13 @@ var should = require("should");
 var sinon = require("sinon");
 ```
 
-The original test runner uses Grunt mocha and instanbul (test coverage).
+The original test runner uses:
+
+- [grunt](https://gruntjs.com/) for runner tasks including builds
+- [mocha](https://mochajs.org/) for testing
+- [istanbul](https://istanbul.js.org/) for test coverage
+
+### Grunt example
 
 ```json
  grunt.loadNpmTasks('grunt-simple-mocha');

@@ -1,14 +1,14 @@
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -17,14 +17,14 @@
 var BearerStrategy = require('passport-http-bearer').Strategy;
 var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
 
-var passport = require("passport");
-var crypto = require("crypto");
-var util = require("util");
+var passport = require('passport');
+var crypto = require('crypto');
+var util = require('util');
 
-var Tokens = require("./tokens");
-var Users = require("./users");
-var Clients = require("./clients");
-var permissions = require("./permissions");
+var Tokens = require('./tokens');
+var Users = require('./users');
+var Clients = require('./clients');
+var permissions = require('./permissions');
 
 var log;
 
@@ -79,14 +79,14 @@ module.exports = class Strategies {
                         });
                     } else {
                         log.audit({
-                            event: "auth.invalid-token"
+                            event: 'auth.invalid-token'
                         });
                         done(null, false);
                     }
                 });
             } else {
                 log.audit({
-                    event: "auth.invalid-token"
+                    event: 'auth.invalid-token'
                 });
                 done(null, false);
             }
@@ -101,7 +101,7 @@ module.exports = class Strategies {
                 done(null, client);
             } else {
                 log.audit({
-                    event: "auth.invalid-client",
+                    event: 'auth.invalid-client',
                     client: clientId
                 });
                 done(null, false);
@@ -131,17 +131,17 @@ module.exports = class Strategies {
         });
         if (attemptCount > 5) {
             log.audit({
-                event: "auth.login.fail.too-many-attempts",
+                event: 'auth.login.fail.too-many-attempts',
                 username: username,
                 client: client.id
             });
-            done(new Error("Too many login attempts. Wait 10 minutes and try again"), false);
+            done(new Error('Too many login attempts. Wait 10 minutes and try again'), false);
             return;
         }
 
         users.authenticate(username, password).then((user) => {
             if (user) {
-                if (scope === "") {
+                if (scope === '') {
                     scope = user.permissions;
                 }
                 if (permissions.hasPermission(user.permissions, scope)) {
@@ -150,7 +150,7 @@ module.exports = class Strategies {
                     });
                     Tokens.create(username, client.id, scope).then((tokens) => {
                         log.audit({
-                            event: "auth.login",
+                            event: 'auth.login',
                             username: username,
                             client: client.id,
                             scope: scope
@@ -161,7 +161,7 @@ module.exports = class Strategies {
                     });
                 } else {
                     log.audit({
-                        event: "auth.login.fail.permissions",
+                        event: 'auth.login.fail.permissions',
                         username: username,
                         client: client.id,
                         scope: scope
@@ -170,7 +170,7 @@ module.exports = class Strategies {
                 }
             } else {
                 log.audit({
-                    event: "auth.login.fail.credentials",
+                    event: 'auth.login.fail.credentials',
                     username: username,
                     client: client.id,
                     scope: scope

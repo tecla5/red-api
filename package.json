@@ -56,7 +56,8 @@
     "sentiment": "2.1.0",
     "when": "3.7.8",
     "ws": "1.1.1",
-    "xml2js": "0.4.17"
+    "xml2js": "0.4.17",
+    "red-runtime": "github:tecla5/red-runtime"
   },
   "optionalDependencies": {
     "bcrypt": "~1.0.1"
