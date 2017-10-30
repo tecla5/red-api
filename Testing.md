@@ -2,21 +2,29 @@
 
 ## Status
 
-- `comms` Uncaught Error: socket hang up
+- `comms` Uncaught Error: socket hang up. Noe: new `Comms` class is pretty much empty!!!
+
+`develop` branch
+
 - `credentials` 3/3 all pass :)
 - `flow` 11/11 all pass :)
+
+`testing` branch
+
 - `flows` 11/11 all pass :)
 - `index` -> `Route.get` error (see below)
 - `info` -> `Route.get` error
 - `library` -> `Route.get` error
 - `locales` TODO (no tests defined)
 - `nodes` -> `Route.get` error (see below)
-- `theme`
+- `theme` -> `Route.get` error (see below)
 - `ui`
+
+Why the `Route.get` error now? looks related to the `Api` class on initialization.
 
 ### Route.get error
 
-FIX: Looks like `var api = require('.')` fails!!!
+`var api = require('.')` fails!!!
 
 `info_spec.js` error:
 
