@@ -22,24 +22,26 @@ var sinon = require('sinon');
 var when = require('when');
 
 const api = require('.');
-var flow = api.flow
+var Flow = api.Flow
 
 describe('flow api', function () {
 
-    var app;
+    var app, flow
 
-    before(function () {
+    function prepareApp() {
         app = express();
+
+        // FIX: ensure that each handler is bound to its proper context (flow)
         app.use(bodyParser.json());
-        app.get('/flow/:id', flow.get);
-        app.post('/flow', flow.post);
-        app.put('/flow/:id', flow.put);
-        app.delete('/flow/:id', flow.delete);
-    });
+        app.get('/flow/:id', flow.get.bind(flow));
+        app.post('/flow', flow.post.bind(flow));
+        app.put('/flow/:id', flow.put.bind(flow));
+        app.delete('/flow/:id', flow.delete.bind(flow));
+    }
 
     describe('get', function () {
         before(function () {
-            flow.init({
+            flow = Flow.init({
                 settings: {},
                 nodes: {
                     getFlow: function (id) {
@@ -56,6 +58,7 @@ describe('flow api', function () {
                     audit: sinon.stub()
                 }
             });
+            prepareApp()
         })
         it('gets a known flow', function (done) {
             request(app)
@@ -81,7 +84,7 @@ describe('flow api', function () {
 
     describe('add', function () {
         before(function () {
-            flow.init({
+            flow = Flow.init({
                 settings: {},
                 nodes: {
                     addFlow: function (f) {
@@ -96,6 +99,7 @@ describe('flow api', function () {
                     audit: sinon.stub()
                 }
             });
+            prepareApp()
         })
         it('adds a new flow', function (done) {
             request(app)
@@ -154,13 +158,14 @@ describe('flow api', function () {
                     }
                 }
             };
-            flow.init({
+            flow = Flow.init({
                 settings: {},
                 nodes: nodes,
                 log: {
                     audit: sinon.stub()
                 }
             });
+            prepareApp()
         })
 
         it('updates an existing flow', function (done) {
@@ -254,13 +259,14 @@ describe('flow api', function () {
                     }
                 }
             };
-            flow.init({
+            flow = Flow.init({
                 settings: {},
                 nodes: nodes,
                 log: {
                     audit: sinon.stub()
                 }
             });
+            prepareApp()
         })
 
         it('updates an existing flow', function (done) {

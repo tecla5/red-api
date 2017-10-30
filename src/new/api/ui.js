@@ -22,9 +22,15 @@ var theme = require('./theme');
 
 var redNodes;
 
-var assetsDir = path.resolve(__dirname + '/../../../assets')
+var rootDir = path.resolve(__dirname + '../../../../../..')
+var assetsDir = path.resolve(rootDir + '/assets')
 var templateDir = path.resolve(assetsDir, 'templates/new');
 var editorTemplate;
+
+// for debugging template loading
+// console.log({
+//     templateDir
+// })
 
 class Ui {
     constructor(runtime) {

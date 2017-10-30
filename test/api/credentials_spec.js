@@ -21,15 +21,21 @@ var sinon = require('sinon');
 var when = require('when');
 
 const api = require('.');
-var credentials = api.credentials
+var Credentials = api.Credentials
+
+const {
+    log
+} = console
 
 describe('credentials api', function () {
-    var app;
+    var app, credentials
 
     before(function () {
         app = express();
-        app.get('/credentials/:type/:id', credentials.get);
-        credentials.init({
+        log({
+            Credentials
+        })
+        credentials = Credentials.init({
             log: {
                 audit: function () {}
             },
@@ -60,6 +66,10 @@ describe('credentials api', function () {
                 }
             }
         });
+        log({
+            credentials
+        })
+        app.get('/credentials/:type/:id', credentials.get.bind(credentials));
     });
     it('returns empty credentials if unknown type', function (done) {
         request(app)
