@@ -28,7 +28,7 @@ var api = require('.')
 var {
     Nodes,
     Locales,
-    locales
+    // locales
 } = api
 
 function initNodes(runtime) {
@@ -50,13 +50,14 @@ describe("nodes api", function () {
     before(function () {
         app = express();
         app.use(bodyParser.json());
-        app.get("/nodes", nodes.getAll);
-        app.post("/nodes", nodes.post);
-        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, nodes.getModule);
-        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, nodes.getSet);
-        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, nodes.putModule);
-        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, nodes.putSet);
-        app.delete("/nodes/:id", nodes.delete);
+        app.get("/nodes", nodes.getAll.bind(nodes));
+        app.post("/nodes", nodes.post.bind(nodes));
+        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, nodes.getModule.bind(nodes));
+        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, nodes.getSet.bind(nodes));
+        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, nodes.putModule.bind(nodes));
+        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, nodes.putSet.bind(nodes));
+        app.delete("/nodes/:id", nodes.delete.bind(nodes));
+
         sinon.stub(locales, "determineLangFromHeaders", function () {
             return "en-US";
         });

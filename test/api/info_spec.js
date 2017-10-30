@@ -20,34 +20,47 @@ var express = require('express');
 var sinon = require('sinon');
 var when = require('when');
 
-var app = express();
-
 const api = require('.');
 var {
     Info,
     Theme,
     theme,
-    info
+    // info
 } = api
+
+const {
+    log
+} = console
 
 describe('info api', function () {
     describe('settings handler', function () {
-        before(function () {
+        let app, info
+
+        function prepareApp() {
             sinon.stub(theme, 'settings', function () {
                 return {
                     test: 456
                 };
             });
+
             app = express();
-            app.get('/settings', info.settings);
-        });
+            // app.use(bodyParser.json());
+            log({
+                info,
+                settings: info.settings
+            })
+
+            app.get('/settings', info.settings.bind(info));
+        }
+
+        before(function () {})
 
         after(function () {
             theme.settings.restore();
         });
 
         it('returns the filtered settings', function (done) {
-            info = new Info({
+            info = Info.init({
                 settings: {
                     foo: 123,
                     httpNodeRoot: 'testHttpNodeRoot',
@@ -63,6 +76,7 @@ describe('info api', function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .get('/settings')
                 .expect(200)
@@ -96,6 +110,7 @@ describe('info api', function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .get('/settings')
                 .expect(200)

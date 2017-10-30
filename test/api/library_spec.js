@@ -35,7 +35,7 @@ describe('library api', function () {
     function initLibrary(_flows, _libraryEntries, _examples) {
         var flows = _flows;
         var libraryEntries = _libraryEntries;
-        library = new Library(app, {
+        library = Library.init(app, {
             log: {
                 audit: function () {},
                 _: function () {},
@@ -106,9 +106,9 @@ describe('library api', function () {
         before(function () {
             app = express();
             app.use(bodyParser.json());
-            app.get('/library/flows', library.getAll);
-            app.post(new RegExp('/library/flows\/(.*)'), library.post);
-            app.get(new RegExp('/library/flows\/(.*)'), library.get);
+            app.get('/library/flows', library.getAll.bind(library));
+            app.post(new RegExp('/library/flows\/(.*)'), library.post.bind(library));
+            app.get(new RegExp('/library/flows\/(.*)'), library.get.bind(library));
         });
         it('returns empty result', function (done) {
             initLibrary({}, {

@@ -19,7 +19,7 @@ var redNodes;
 var settings;
 
 class Flows {
-    constructor(runtime) {
+    constructor(runtime = {}) {
 
         this.settings = runtime.settings;
         this.redNodes = runtime.nodes;
@@ -27,6 +27,11 @@ class Flows {
     }
 
     get(req, res) {
+        const {
+            log,
+            redNodes
+        } = this
+
         var version = req.get('Node-RED-API-Version') || 'v1';
         if (version === 'v1') {
             log.audit({
@@ -54,6 +59,11 @@ class Flows {
     }
 
     post(req, res) {
+        const {
+            log,
+            redNodes
+        } = this
+
         var version = req.get('Node-RED-API-Version') || 'v1';
         if (!/^v[12]$/.test(version)) {
             log.audit({

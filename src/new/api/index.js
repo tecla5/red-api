@@ -42,39 +42,39 @@ class Api {
     if (settings.httpAdminRoot !== false) {
 
       // FIX: using class constructors
-      this.comms = new Comms(server, runtime);
+      this.comms = Comms.init(server, runtime);
 
       var adminApp = express();
       this.adminApp = adminApp
 
-      var auth = new Auth(runtime);
+      var auth = Auth.init(runtime);
       this.auth = auth
 
-      var credentials = new Credentials(runtime);
+      var credentials = Credentials.init(runtime);
       this.credentials = credentials
 
-      var flows = new Flows(runtime);
+      var flows = Flows.init(runtime);
       this.flows = flows
 
-      var flow = new Flow(runtime);
+      var flow = Flow.init(runtime);
       this.flow = flow
 
-      var info = new Info(runtime);
+      var info = Info.init(runtime);
       this.info = info
 
-      var library = new Library(adminApp, runtime);
+      var library = Library.init(adminApp, runtime);
       this.library = library
 
-      var locales = new Locales(runtime);
+      var locales = Locales.init(runtime);
       this.locales = locales
 
-      var nodes = new Nodes(runtime);
+      var nodes = Nodes.init(runtime);
       this.nodes = nodes
 
       // Editor
       if (!settings.disableEditor) {
         // FIX: using class constructor
-        var ui = new Ui(runtime);
+        var ui = Ui.init(runtime);
         this.ui = ui
 
         var editorApp = express();
@@ -175,8 +175,15 @@ class Api {
       adminApp.get('/library/flows', needsPermission('library.read'), library.getAll, errorHandler);
       adminApp.get(new RegExp('/library/flows\/(.*)'), needsPermission('library.read'), library.get, errorHandler);
 
+
+      let readSettings = needsPermission('settings.read')
+
       // Settings
-      adminApp.get('/settings', needsPermission('settings.read'), info.settings, errorHandler);
+      console.log('Settings', {
+        settings: info.settings,
+        readSettings
+      })
+      adminApp.get('/settings', readSettings, info.settings, errorHandler);
 
       // Error Handler
       //adminApp.use(errorHandler);

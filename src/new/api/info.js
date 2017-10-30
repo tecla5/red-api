@@ -17,14 +17,16 @@ var Theme = require('./theme');
 var util = require('util');
 
 class Info {
-    constructor(_runtime = {}) {
-        this.runtime = _runtime;
-        this._settings = this.runtime.settings;
+    constructor(runtime = {}) {
+        this.runtime = runtime;
+        this.settings = runtime.settings;
     }
 
     settings(req, res) {
-        var settings = this._settings
-        var runtime = this.runtime
+        const {
+            settings,
+            runtime
+        } = this
 
         var safeSettings = {
             httpNodeRoot: settings.httpNodeRoot || '/',

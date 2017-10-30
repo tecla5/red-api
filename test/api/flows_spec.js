@@ -22,21 +22,21 @@ var sinon = require('sinon');
 var when = require('when');
 
 const api = require('.');
-var flows = api.flows
+var Flows = api.Flows
 
 describe('flows api', function () {
 
-    var app;
+    var app, flows
 
-    before(function () {
+    function prepareApp() {
         app = express();
         app.use(bodyParser.json());
-        app.get('/flows', flows.get);
-        app.post('/flows', flows.post);
-    });
+        app.get('/flows', flows.get.bind(flows));
+        app.post('/flows', flows.post.bind(flows));
+    }
 
     it('returns flow - v1', function (done) {
-        flows.init({
+        flows = Flows.init({
             settings: {},
             log: {
                 warn: function () {},
@@ -52,6 +52,8 @@ describe('flows api', function () {
                 }
             }
         });
+        prepareApp()
+
         request(app)
             .get('/flows')
             .set('Accept', 'application/json')
@@ -69,7 +71,7 @@ describe('flows api', function () {
             });
     });
     it('returns flow - v2', function (done) {
-        flows.init({
+        flows = Flows.init({
             settings: {},
             log: {
                 warn: function () {},
@@ -85,6 +87,7 @@ describe('flows api', function () {
                 }
             }
         });
+        prepareApp()
         request(app)
             .get('/flows')
             .set('Accept', 'application/json')
@@ -126,7 +129,7 @@ describe('flows api', function () {
         var setFlows = sinon.spy(function () {
             return when.resolve();
         });
-        flows.init({
+        flows = Flows.init({
             log: {
                 warn: function () {},
                 _: function () {},
@@ -136,6 +139,7 @@ describe('flows api', function () {
                 setFlows: setFlows
             }
         });
+        prepareApp()
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
@@ -153,7 +157,7 @@ describe('flows api', function () {
         var setFlows = sinon.spy(function () {
             return when.resolve();
         });
-        flows.init({
+        flows = Flows.init({
             log: {
                 warn: function () {},
                 _: function () {},
@@ -163,6 +167,8 @@ describe('flows api', function () {
                 setFlows: setFlows
             }
         });
+
+        prepareApp()
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
@@ -188,7 +194,7 @@ describe('flows api', function () {
                 flows: [1, 2, 3]
             }
         });
-        flows.init({
+        flows = Flows.init({
             log: {
                 warn: function () {},
                 _: function () {},
@@ -199,6 +205,7 @@ describe('flows api', function () {
                 getFlows: getFlows
             }
         });
+        prepareApp()
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
@@ -226,7 +233,7 @@ describe('flows api', function () {
                 flows: [1, 2, 3]
             }
         });
-        flows.init({
+        flows = Flows.init({
             log: {
                 warn: function () {},
                 _: function () {},
@@ -237,6 +244,7 @@ describe('flows api', function () {
                 getFlows: getFlows
             }
         });
+        prepareApp()
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
@@ -264,7 +272,7 @@ describe('flows api', function () {
                 flows: [1, 2, 3]
             }
         });
-        flows.init({
+        flows = Flows.init({
             log: {
                 warn: function () {},
                 _: function () {},
@@ -275,6 +283,7 @@ describe('flows api', function () {
                 getFlows: getFlows
             }
         });
+        prepareApp()
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
@@ -313,7 +322,7 @@ describe('flows api', function () {
         var loadFlows = sinon.spy(function () {
             return when.resolve();
         });
-        flows.init({
+        flows = Flows.init({
             log: {
                 warn: function () {},
                 _: function () {},
@@ -323,6 +332,7 @@ describe('flows api', function () {
                 loadFlows: loadFlows
             }
         });
+        prepareApp()
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')
@@ -338,7 +348,7 @@ describe('flows api', function () {
     });
 
     it('returns error when set fails', function (done) {
-        flows.init({
+        flows = Flows.init({
             log: {
                 warn: function () {},
                 _: function () {},
@@ -350,6 +360,7 @@ describe('flows api', function () {
                 }
             }
         });
+        prepareApp()
         request(app)
             .post('/flows')
             .set('Accept', 'application/json')

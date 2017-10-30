@@ -247,8 +247,8 @@ function createLibrary(type) {
     }
 }
 
-Library.init = function (runtime) {
-    return new Library(runtime)
+Library.init = function (app, runtime) {
+    return new Library(app, runtime)
 }
 
 module.exports = Library
