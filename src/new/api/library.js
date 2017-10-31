@@ -17,15 +17,22 @@ var fs = require('fs');
 var fspath = require('path');
 var when = require('when');
 
-var redApp = null;
-var storage;
-var log;
-var redNodes;
+// var redApp = null;
+// var storage;
+// var log;
+// var redNodes;
 var needsPermission = require('./auth').needsPermission;
 
+const {
+    log
+} = console
 
 class Library {
-    constructor(app, runtime) {
+    constructor(app, runtime = {}) {
+        log('Library', {
+            app,
+            runtime
+        })
         this.redApp = app;
         this.log = runtime.log;
         this.storage = runtime.storage;
@@ -36,7 +43,8 @@ class Library {
     getAll(req, res) {
         const {
             storage,
-            log
+            log,
+            redNodes
         } = this
 
         storage.getAllFlows().then(function (flows) {

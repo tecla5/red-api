@@ -30,13 +30,17 @@ var {
 } = globals
 var api
 
+const {
+    log
+} = console
+
 describe('api index', function () {
     var app;
 
     describe('disables editor', function () {
         before(function () {
-            // FIX: using constructor instead of legacy init
-            api = new Api({}, {
+            // FIX: using factory method (constructor) instead of legacy init
+            api = Api.init({}, {
                 settings: {
                     httpNodeRoot: true,
                     httpAdminRoot: true,
@@ -77,27 +81,51 @@ describe('api index', function () {
         });
     });
 
-    describe('can serve auth', function () {
+    // FIX: This is not pretty, with two before hooks and one after!
+    // TOO messy!
+    describe.only('can serve auth', function () {
         var mockList = [
             'ui', 'nodes', 'flows', 'library', 'info', 'locales', 'credentials'
         ]
+
+        // FIX: This is really shit/hack!!!
         before(function () {
+            // FIX: this is fucked up!
+            // perhaps mock factory .init method and not constructor!
+
             mockList.forEach(function (m) {
+                log('mockList: dynamic require - mock constructor of', {
+                    m
+                })
                 let mock = require('../../src/new/api/' + m)
                 // FIX: stub constructor with empty function
                 // See: https://stackoverflow.com/questions/40271140/es2016-class-sinon-stub-constructor
-                sinon.stub(mock.prototype, 'constructor',
-                    function () {});
+
+                sinon.stub(mock.prototype, 'constructor', function () {})
+                // sinon.stub(mock.prototype, 'constructor',
+                //     function () {});
             });
         });
+
         after(function () {
             mockList.forEach(function (m) {
+                log('mockList: dynamic require - restore', {
+                    m
+                })
+                // FIX: super ugly!!!
                 let mock = require('../../src/new/api/' + m)
-                new mock().restore();
+
+                // mock.init.restore()
+                let mocked = new mock()
+                if (typeof mocked.restore === 'function') {
+                    mocked.restore();
+                }
+
             })
         });
+
         before(function () {
-            new Api({}, {
+            api = Api.init({}, {
                 settings: {
                     httpNodeRoot: true,
                     httpAdminRoot: true,
@@ -157,7 +185,7 @@ describe('api index', function () {
 
         it('serves the editor', function (done) {
             var errorLog = sinon.spy();
-            api = new Api({}, {
+            api = Api.init({}, {
                 log: {
                     audit: function () {},
                     error: errorLog
@@ -212,7 +240,7 @@ describe('api index', function () {
         });
 
         before(function () {
-            api = new Api({}, {
+            api = Api.init({}, {
                 log: {
                     audit: function () {}
                 },

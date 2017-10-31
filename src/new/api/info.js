@@ -15,22 +15,35 @@
  **/
 var Theme = require('./theme');
 var util = require('util');
+var runtime;
+var settings;
+
+const {
+    log
+} = console
 
 class Info {
     constructor(runtime = {}) {
         this.runtime = runtime;
-        if(runtime.settings) this.settings = runtime.settings;
+
+        this._settings = runtime.settings
+        this.theme = Theme.init(runtime)
     }
 
+    // route handler for /settings
     settings(req, res) {
         const {
-            settings,
-            runtime
+            _settings,
+            runtime,
+            theme
         } = this
+        log('route: settings', req)
+
+        let settings = _settings
 
         var safeSettings = {
-            httpNodeRoot: settings.httpNodeRoot || '/',
-            version: settings.version,
+            httpNodeRoot: _settings.httpNodeRoot || '/',
+            version: _settings.version,
             user: req.user
         }
 
@@ -47,8 +60,15 @@ class Info {
             safeSettings.flowFilePretty = settings.flowFilePretty;
         }
 
-        if (!runtime.nodes.paletteEditorEnabled()) {
+        const paletteEditorEnabled = runtime.nodes.paletteEditorEnabled()
+        // console.log('should be false', {
+        //     paletteEditorEnabled
+        // })
+        if (!paletteEditorEnabled) {
             safeSettings.editorTheme = safeSettings.editorTheme || {};
+            console.log('set editorTheme.palette', {
+                palette: safeSettings.editorTheme.palette
+            })
             safeSettings.editorTheme.palette = safeSettings.editorTheme.palette || {};
             safeSettings.editorTheme.palette.editable = false;
         }

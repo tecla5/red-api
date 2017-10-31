@@ -22,10 +22,13 @@ var Clients = require('./clients');
 var Tokens = require('./tokens');
 var Users = require('./users');
 var Permissions = require('./permissions');
-var theme = require('../theme');
+
+var Theme = require('../theme');
 
 class Auth {
   constructor(runtime) {
+    this.theme = new Theme(runtime)
+
     var strategies = new Strategies(runtime)
     this.strategies = strategies
 
@@ -90,6 +93,16 @@ class Auth {
   }
 
   login(req, res) {
+    const {
+      settings,
+      theme
+    } = this
+
+    console.log('login', {
+      ctx: this,
+      theme
+    })
+
     var response = {};
     if (settings.adminAuth) {
       if (settings.adminAuth.type === 'credentials') {

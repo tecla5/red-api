@@ -26,8 +26,36 @@ const {
   Users
 } = require('./auth')
 
+const {
+  log,
+  error
+} = console
+
+function rebindSingle(obj) {
+  let methods = Object.keys(obj)
+  methods.map(name => {
+    let prop = obj[name]
+    if (typeof prop === 'function') {
+      // perhaps lookup to check if this is indeed an express routing function!
+      obj[name] = obj[name].bind(obj) // bind to self as context (this)
+    }
+  })
+  return obj
+}
+
+function rebind(...objects) {
+  return objects.map(obj => {
+    return rebindSingle(obj)
+  })
+}
+
 class Api {
   constructor(_server, _runtime = {}) {
+    log('Api', {
+      _server,
+      _runtime
+    })
+
     var runtime = _runtime
     var server = _server
     // FIX: from init legacy init in api/index.js
@@ -38,6 +66,13 @@ class Api {
     this.settings = settings
     this.i18n = runtime.i18n;
     this.log = runtime.log;
+
+    if (!runtime.log) {
+      // throw 'Api: missing runtime log'
+      error('Api: missing runtime log', {
+        runtime
+      })
+    }
 
     if (settings.httpAdminRoot !== false) {
 
@@ -73,9 +108,15 @@ class Api {
 
       // Editor
       if (!settings.disableEditor) {
+        log('Api - configure editor')
+
         // FIX: using class constructor
         var ui = Ui.init(runtime);
         this.ui = ui
+
+        log({
+          ui
+        })
 
         var editorApp = express();
         this.editorApp = editorApp
@@ -114,9 +155,13 @@ class Api {
       }));
 
       var errorHandler = this.errorHandler.bind(this)
-      var needsPermission = auth.needsPermission
 
-      adminApp.get('/auth/login', auth.login, errorHandler);
+      // FIX: instead use rebind on auth (see below)
+      var needsPermission = auth.needsPermission.bind(auth)
+
+      let login = auth.login.bind(auth)
+
+      adminApp.get('/auth/login', login, errorHandler);
 
       if (settings.adminAuth) {
         if (settings.adminAuth.type === 'strategy') {
@@ -130,7 +175,9 @@ class Api {
             auth.errorHandler
           );
         }
-        adminApp.post('/auth/revoke', needsPermission(''), auth.revoke, errorHandler);
+        // FIX: instead use rebind on auth (see below)
+        let revoke = auth.revoke.bind(auth)
+        adminApp.post('/auth/revoke', needsPermission(''), revoke, errorHandler);
       }
       if (settings.httpAdminCors) {
         var corsHandler = cors(settings.httpAdminCors);
@@ -142,8 +189,12 @@ class Api {
       console.log('/flows route', {
         flRead,
         flGet: flow.get,
-        errorHandler
+        // errorHandler
       })
+
+      // SUPER IMPORTANT!!!
+      // FIX: instead use rebind on auth (see below)
+      rebind(flows, nodes, credentials, locales, library, info)
 
       // Flows
       adminApp.get('/flows', needsPermission('flows.read'), flows.get, errorHandler);
@@ -217,6 +268,13 @@ class Api {
   }
 
   errorHandler(err, req, res, next) {
+    console.log('errorHandler', {
+      // ctx: this
+    })
+    const {
+      log
+    } = this
+
     if (err.message === 'request entity too large') {
       log.error(err);
     } else {

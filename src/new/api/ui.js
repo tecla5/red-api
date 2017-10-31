@@ -32,9 +32,16 @@ var editorTemplate;
 //     templateDir
 // })
 
+const {
+    log
+} = console
+
 class Ui {
-    constructor(runtime) {
-        redNodes = runtime.nodes;
+    constructor(runtime = {}) {
+        log('Ui', {
+            runtime
+        })
+        this.redNodes = runtime.nodes;
         editorTemplate = fs.readFileSync(path.join(templateDir, 'index.mst'), 'utf8');
         Mustache.parse(editorTemplate);
 
@@ -84,6 +91,9 @@ class Ui {
 }
 
 Ui.init = function (runtime) {
+    log('Ui.init', {
+        runtime
+    })
     return new Ui(runtime)
 }
 

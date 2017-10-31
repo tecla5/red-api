@@ -15,11 +15,18 @@
  **/
 var fs = require('fs');
 var path = require('path');
-var i18n;
-var redNodes;
+// var i18n;
+// var redNodes;
+
+const {
+    log
+} = console
 
 class Locales {
-    constructor(runtime) {
+    constructor(runtime = {}) {
+        log('Locales', {
+            runtime
+        })
         this.i18n = runtime.i18n;
         this.redNodes = runtime.nodes;
     }

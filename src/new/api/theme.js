@@ -37,29 +37,29 @@ var defaultContext = {
     }
 };
 
-var theme = null;
-var themeContext = clone(defaultContext);
-var themeSettings = null;
-var runtime = null;
-
-var themeApp;
-
 class Theme {
     constructor(runtime = {}) {
         var settings = runtime.settings || {};
-        this.settings = settings
-        themeContext = clone(defaultContext);
+        this._settings = settings
+
+        let themeContext = clone(defaultContext);
         if (runtime.version) {
             themeContext.version = runtime.version();
         }
-        themeSettings = null;
-        theme = settings.editorTheme || {};
+        this.themeContext = themeContext
+        this.theme = settings.editorTheme || {};
+        this.themeSettings = {}
     }
 
     app() {
         var i;
         var url;
-        themeSettings = {};
+
+        let {
+            theme,
+            themeApp,
+            themeSettings
+        } = this
 
         themeApp = express();
 
@@ -154,15 +154,15 @@ class Theme {
     }
 
     context() {
-        return themeContext;
+        return this.themeContext;
     }
 
     settings() {
-        return themeSettings;
+        return this.themeSettings;
     }
 
     serveFile(baseUrl, file) {
-        return serveFile(themeApp, baseUrl, file);
+        return serveFile(this.themeApp, baseUrl, file);
     }
 }
 

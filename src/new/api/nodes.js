@@ -16,14 +16,21 @@
 
 var when = require('when');
 var locales = require('./locales');
-var redNodes;
-var log;
-var i18n;
-var settings;
-var events;
+// var redNodes;
+// var log;
+// var i18n;
+// var settings;
+// var events;
+
+const {
+    log
+} = console
 
 class Nodes {
-    constructor(runtime) {
+    constructor(runtime = {}) {
+        log('Nodes', {
+            runtime
+        })
         this.redNodes = runtime.nodes;
         this.log = runtime.log;
         this.i18n = runtime.i18n;
