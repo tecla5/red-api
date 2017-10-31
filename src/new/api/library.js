@@ -29,10 +29,10 @@ const {
 
 class Library {
     constructor(app, runtime = {}) {
-        log('Library', {
-            app,
-            runtime
-        })
+        // log('Library', {
+        //     app,
+        //     runtime
+        // })
         this.redApp = app;
         this.log = runtime.log;
         this.storage = runtime.storage;

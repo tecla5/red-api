@@ -15,7 +15,7 @@
  **/
 
 var when = require('when');
-var locales = require('./locales');
+var Locales = require('./locales');
 // var redNodes;
 // var log;
 // var i18n;
@@ -29,16 +29,34 @@ const {
 class Nodes {
     constructor(runtime = {}) {
         log('Nodes', {
-            runtime
+            runtime,
+            settings: runtime.settings
         })
         this.redNodes = runtime.nodes;
         this.log = runtime.log;
         this.i18n = runtime.i18n;
         this.settings = runtime.settings;
         this.events = runtime.events;
+
+        this.locales = Locales.init(runtime)
     }
 
     getAll(req, res) {
+        const {
+            events,
+            i18n,
+            settings,
+            redNodes,
+            log,
+            locales
+        } = this
+        // log('getAll', {
+        //     req
+        // })
+        console.log({
+            locales
+        })
+
         if (req.get('accept') == 'application/json') {
             log.audit({
                 event: 'nodes.list.get'
@@ -54,6 +72,14 @@ class Nodes {
     }
 
     post(req, res) {
+        const {
+            events,
+            i18n,
+            settings,
+            redNodes,
+            log
+        } = this
+
         if (!settings.available()) {
             log.audit({
                 event: 'nodes.install',
@@ -174,6 +200,14 @@ class Nodes {
     }
 
     delete(req, res) {
+        const {
+            events,
+            i18n,
+            settings,
+            redNodes,
+            log
+        } = this
+
         if (!settings.available()) {
             log.audit({
                 event: 'nodes.remove',
@@ -239,6 +273,14 @@ class Nodes {
     }
 
     getSet(req, res) {
+        const {
+            events,
+            i18n,
+            settings,
+            redNodes,
+            log
+        } = this
+
         var id = req.params[0] + '/' + req.params[2];
         var result = null;
         if (req.get('accept') === 'application/json') {
@@ -279,6 +321,14 @@ class Nodes {
     }
 
     getModule(req, res) {
+        const {
+            events,
+            i18n,
+            settings,
+            redNodes,
+            log
+        } = this
+
         var module = req.params[0];
         var result = redNodes.getModuleInfo(module);
         if (result) {
@@ -298,6 +348,14 @@ class Nodes {
     }
 
     putSet(req, res) {
+        const {
+            events,
+            i18n,
+            settings,
+            redNodes,
+            log
+        } = this
+
         if (!settings.available()) {
             log.audit({
                 event: 'nodes.info.set',
@@ -359,6 +417,19 @@ class Nodes {
     }
 
     putModule(req, res) {
+        const {
+            events,
+            i18n,
+            settings,
+            redNodes,
+            log
+        } = this
+
+        console.log('putModule', {
+            settings,
+            ctx: this
+        })
+
         if (!settings.available()) {
             log.audit({
                 event: 'nodes.module.set',

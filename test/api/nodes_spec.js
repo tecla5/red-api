@@ -21,7 +21,6 @@ var bodyParser = require('body-parser');
 var sinon = require('sinon');
 var when = require('when');
 
-var nodes
 // var locales
 
 var api = require('.')
@@ -30,6 +29,8 @@ var {
     Locales,
     // locales
 } = api
+
+let locales, nodes
 
 function initNodes(runtime) {
     runtime.log = {
@@ -41,29 +42,66 @@ function initNodes(runtime) {
     runtime.events = {
         emit: function () {}
     }
+    locales = new Locales(runtime)
+
     nodes = new Nodes(runtime);
+    return nodes
 }
 
-describe("nodes api", function () {
-    var app;
+const {
+    log
+} = console
 
-    before(function () {
+describe("nodes api", function () {
+    var app, stubbed;
+
+    function prepareApp() {
+        if (stubbed) {
+            return
+        }
+
+        // TODO: use rebind from api/index.js ??
+        let getAll = nodes.getAll.bind(nodes)
+        let post = nodes.post.bind(nodes)
+        let getModule = nodes.getModule.bind(nodes)
+        let getSet = nodes.getSet.bind(nodes)
+        let putModule = nodes.putModule.bind(nodes)
+        let putSet = nodes.putSet.bind(nodes)
+        let deleteNode = nodes.delete.bind(nodes)
+
+        log('prepareApp', {
+            getAll
+        })
+
+        // configure server
         app = express();
         app.use(bodyParser.json());
-        app.get("/nodes", nodes.getAll.bind(nodes));
-        app.post("/nodes", nodes.post.bind(nodes));
-        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, nodes.getModule.bind(nodes));
-        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, nodes.getSet.bind(nodes));
-        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, nodes.putModule.bind(nodes));
-        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, nodes.putSet.bind(nodes));
-        app.delete("/nodes/:id", nodes.delete.bind(nodes));
 
+        // set up routes
+        app.get('/nodes', getAll);
+        app.post('/nodes', post);
+        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, getModule);
+        app.get(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, getSet);
+        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)$/, putModule);
+        app.put(/\/nodes\/((@[^\/]+\/)?[^\/]+)\/([^\/]+)$/, putSet);
+        app.delete("/nodes/:id", deleteNode);
+
+        // TODO: we need cleanup, using restore or sth
         sinon.stub(locales, "determineLangFromHeaders", function () {
             return "en-US";
         });
+        stubbed = true
+    }
+
+    before(done => {
+        done()
     });
 
 
+    // FIX: TODO
+    // any of these it tests run on its own (via it.only) , passes
+    // the PROBLEM is some global side effect.
+    // Bad test infradtructure!!!
     describe('get nodes', function () {
         it('returns node list', function (done) {
             initNodes({
@@ -73,6 +111,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .get('/nodes')
                 .set('Accept', 'application/json')
@@ -81,8 +120,11 @@ describe("nodes api", function () {
                     if (err) {
                         throw err;
                     }
-                    res.body.should.be.an.Array();
-                    res.body.should.have.lengthOf(3);
+                    let {
+                        body
+                    } = res
+                    body.should.be.an.Array();
+                    body.should.have.lengthOf(3);
                     done();
                 });
         });
@@ -98,6 +140,8 @@ describe("nodes api", function () {
                     determineLangFromHeaders: function () {}
                 }
             });
+            prepareApp()
+
             request(app)
                 .get('/nodes')
                 .set('Accept', 'text/html')
@@ -123,6 +167,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .get('/nodes/node-red')
                 .expect(200)
@@ -147,6 +192,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .get('/nodes/node-blue')
                 .expect(404)
@@ -170,6 +216,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .get('/nodes/node-red/123')
                 .set('Accept', 'application/json')
@@ -196,6 +243,7 @@ describe("nodes api", function () {
                     determineLangFromHeaders: function () {}
                 }
             });
+            prepareApp()
             request(app)
                 .get('/nodes/node-red/123')
                 .set('Accept', 'text/html')
@@ -221,6 +269,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .get('/nodes/node-red/456')
                 .set('Accept', 'application/json')
@@ -244,6 +293,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .post('/nodes')
                 .expect(400)
@@ -263,6 +313,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .post('/nodes')
                 .send({})
@@ -297,6 +348,7 @@ describe("nodes api", function () {
                         }
                     }
                 });
+                prepareApp()
                 request(app)
                     .post('/nodes')
                     .send({
@@ -336,6 +388,7 @@ describe("nodes api", function () {
                         }
                     }
                 });
+                prepareApp()
                 request(app)
                     .post('/nodes')
                     .send({
@@ -366,6 +419,7 @@ describe("nodes api", function () {
                         }
                     }
                 });
+                prepareApp()
                 request(app)
                     .post('/nodes')
                     .send({
@@ -398,6 +452,7 @@ describe("nodes api", function () {
                         }
                     }
                 });
+                prepareApp()
                 request(app)
                     .post('/nodes')
                     .send({
@@ -422,7 +477,7 @@ describe("nodes api", function () {
                     }
                 }
             });
-
+            prepareApp()
             request(app)
                 .del('/nodes/123')
                 .expect(400)
@@ -460,6 +515,7 @@ describe("nodes api", function () {
                         }
                     }
                 });
+                prepareApp()
                 request(app)
                     .del('/nodes/foo')
                     .expect(204)
@@ -487,6 +543,7 @@ describe("nodes api", function () {
                         }
                     }
                 });
+                prepareApp()
                 request(app)
                     .del('/nodes/foo')
                     .expect(404)
@@ -521,6 +578,7 @@ describe("nodes api", function () {
                         }
                     }
                 });
+                prepareApp()
                 request(app)
                     .del('/nodes/foo')
                     .expect(400)
@@ -545,6 +603,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .put('/nodes/123')
                 .expect(400)
@@ -564,6 +623,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .put('/nodes/node-red/foo')
                 .send({})
@@ -585,6 +645,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .put('/nodes/foo')
                 .send({})
@@ -612,7 +673,7 @@ describe("nodes api", function () {
                     }
                 }
             });
-
+            prepareApp()
             request(app)
                 .put('/nodes/node-red/foo')
                 .send({
@@ -640,7 +701,7 @@ describe("nodes api", function () {
                     }
                 }
             });
-
+            prepareApp()
             request(app)
                 .put('/nodes/node-blue')
                 .send({
@@ -678,6 +739,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .put('/nodes/node-red/foo')
                 .send({
@@ -718,6 +780,7 @@ describe("nodes api", function () {
                     }
                 }
             });
+            prepareApp()
             request(app)
                 .put('/nodes/node-red/foo')
                 .send({
@@ -769,6 +832,7 @@ describe("nodes api", function () {
                         disableNode: disableNode
                     }
                 });
+                prepareApp()
                 request(app)
                     .put('/nodes/node-red/foo')
                     .send({
@@ -832,6 +896,7 @@ describe("nodes api", function () {
                         disableNode: disableNode
                     }
                 });
+                prepareApp()
                 request(app)
                     .put('/nodes/node-red/foo')
                     .send({
@@ -897,7 +962,7 @@ describe("nodes api", function () {
                     enableNode: enableNode
                 }
             });
-
+            prepareApp()
             request(app)
                 .put('/nodes/node-red')
                 .send({
@@ -954,7 +1019,7 @@ describe("nodes api", function () {
                     disableNode: disableNode
                 }
             });
-
+            prepareApp()
             request(app)
                 .put('/nodes/node-red')
                 .send({
@@ -1007,6 +1072,7 @@ describe("nodes api", function () {
                         disableNode: disableNode
                     }
                 });
+                prepareApp()
                 request(app)
                     .put('/nodes/node-red')
                     .send({
@@ -1052,7 +1118,7 @@ describe("nodes api", function () {
                     node.enabled = false;
                     return when.resolve(node);
                 });
-
+                prepareApp()
                 initNodes({
                     settings: {
                         available: function () {

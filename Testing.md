@@ -13,10 +13,7 @@
 
 ### index_spec.js
 
-```bash
-     Error: Route.get() requires a callback function but got a [object Object]
-      at new Api (src/new/api/index.js:186:16)
-```
+1/1 passing
 
 ### info
 
@@ -76,7 +73,7 @@ So we skip it for now ;)
 
 ### library
 
-7 passing
+7/7 passing
 
 ### locales
 
@@ -84,10 +81,15 @@ TODO (no tests defined)
 
 ### nodes
 
-```bash
-     TypeError: Cannot read property 'getAll' of undefined
-      at Context.<anonymous> (test/api/nodes_spec.js:53:33)
-```
+26 passing
+8 failing
+
+In fact each or most  of the test pass, if run via `it.only`
+The problem is some side-effect on `prepareApp()` etc.
+
+We need proper `before` and `after` hooks, or even `beforeEach` and `afterEach`
+
+PS: Try to run each of the tests alone to see how many fail run in isolation (if any!!!)
 
 ### theme
 
@@ -102,3 +104,30 @@ TODO (no tests defined)
 - 5 passing
 - 1 pending
 
+## Auth
+
+TODO!!!
+
+### clients
+
+TODO
+
+### index
+
+TODO
+
+### permissions
+
+TODO
+
+### strategies
+
+TODO
+
+### tokens
+
+TODO
+
+### users
+
+TODO

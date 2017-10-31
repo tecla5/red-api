@@ -32,6 +32,9 @@ class Locales {
     }
 
     determineLangFromHeaders(acceptedLanguages) {
+        const {
+            i18n
+        } = this
         var lang = i18n.defaultLang;
         acceptedLanguages = acceptedLanguages || [];
         if (acceptedLanguages.length >= 1) {
