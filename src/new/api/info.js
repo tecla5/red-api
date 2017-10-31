@@ -19,7 +19,7 @@ var util = require('util');
 class Info {
     constructor(runtime = {}) {
         this.runtime = runtime;
-        this.settings = runtime.settings;
+        if(runtime.settings) this.settings = runtime.settings;
     }
 
     settings(req, res) {
