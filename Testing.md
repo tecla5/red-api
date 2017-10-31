@@ -12,6 +12,7 @@
 `testing` branch
 
 - `flows` 11/11 all pass :)
+- `flow` 11/11 all pass :)
 - `index` -> `Route.get` error (see below)
 - `info` -> `Route.get` error
 - `library` -> `Route.get` error
