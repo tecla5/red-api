@@ -106,28 +106,38 @@ PS: Try to run each of the tests alone to see how many fail run in isolation (if
 
 ## Auth
 
-TODO!!!
+TODO
 
 ### clients
 
-TODO
+3/3 passing
 
 ### index
 
-TODO
+5 passing
+1 failing
+
+```bash
+  1) api auth middleware revoke revokes a token:
+     TypeError: Attempted to wrap undefined property revoke as function
+      at context.<anonymous> (test/api/auth/index_spec.js:78:37)
+```
 
 ### permissions
 
-TODO
+6/6 passing
 
 ### strategies
 
-TODO
+2 passing
+10 failing
 
 ### tokens
 
-TODO
+0 passing
+6 failing
 
 ### users
 
-TODO
+6 passing
+5 failing

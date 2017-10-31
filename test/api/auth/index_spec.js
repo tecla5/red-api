@@ -20,17 +20,31 @@ var sinon = require('sinon');
 
 var passport = require('passport');
 
-var auth = require('../../../../red/api/auth');
-var Users = require('../../../../red/api/auth/users');
-var Tokens = require('../../../../red/api/auth/tokens');
+// var auth = require('../../../../red/api/auth');
+// var Users = require('../../../../red/api/auth/users');
+// var Tokens = require('../../../../red/api/auth/tokens');
+
+const {
+    Users,
+    Tokens,
+    Auth
+} = require('../');
+
+const {
+    log
+} = console
+
+log({
+    Users,
+    Tokens
+})
 
 describe('api auth middleware', function () {
-
-
+    let auth
 
     describe('ensureClientSecret', function () {
         before(function () {
-            auth.init({
+            auth = Auth.init({
                 settings: {},
                 log: {
                     audit: function () {}
@@ -96,7 +110,7 @@ describe('api auth middleware', function () {
             Users.init.restore();
         });
         it('returns login details - credentials', function (done) {
-            auth.init({
+            auth = Auth.init({
                 settings: {
                     adminAuth: {
                         type: 'credentials'
@@ -116,7 +130,7 @@ describe('api auth middleware', function () {
             });
         });
         it('returns login details - none', function (done) {
-            auth.init({
+            auth = Auth.init({
                 settings: {},
                 log: {
                     audit: function () {}
@@ -130,7 +144,7 @@ describe('api auth middleware', function () {
             });
         });
         it('returns login details - strategy', function (done) {
-            auth.init({
+            auth = Auth.init({
                 settings: {
                     adminAuth: {
                         type: 'strategy',

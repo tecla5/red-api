@@ -15,14 +15,18 @@
  **/
 
 var should = require('should');
-var clients
-var {
+const {
     Clients
 } = require('../');
 
+const {
+    log
+} = console
+
+let clients
 describe('Clients', function () {
     before(() => {
-        clients = new Clients()
+        clients = Clients
     })
 
     it('finds the known editor client', function (done) {
