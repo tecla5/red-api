@@ -35,7 +35,7 @@ describe('library api', function () {
     function initLibrary(_flows, _libraryEntries, _examples) {
         var flows = _flows;
         var libraryEntries = _libraryEntries;
-        library = Library.init(app, {
+        return library = Library.init(app, {
             log: {
                 audit: function () {},
                 _: function () {},
@@ -102,18 +102,34 @@ describe('library api', function () {
         });
     }
 
-    describe('flows', function () {
-        before(function () {
+    describe.only('flows', function () {
+        let library
+
+        function prepareApp() {
+            console.log('prepareApp', {
+                library,
+                getAll: library.getAll
+            })
+
             app = express();
             app.use(bodyParser.json());
             app.get('/library/flows', library.getAll.bind(library));
             app.post(new RegExp('/library/flows\/(.*)'), library.post.bind(library));
             app.get(new RegExp('/library/flows\/(.*)'), library.get.bind(library));
+        }
+
+        before(done => {
+            done()
         });
+
         it('returns empty result', function (done) {
-            initLibrary({}, {
+            library = initLibrary({}, {
                 flows: {}
             });
+            console.log('it', {
+                library
+            })
+            prepareApp();
             request(app)
                 .get('/library/flows')
                 .expect(200)
@@ -128,9 +144,10 @@ describe('library api', function () {
         });
 
         it('returns 404 for non-existent entry', function (done) {
-            initLibrary({}, {
+            library = initLibrary({}, {
                 flows: {}
             });
+            prepareApp()
             request(app)
                 .get('/library/flows/foo')
                 .expect(404)
@@ -139,9 +156,10 @@ describe('library api', function () {
 
 
         it('can store and retrieve item', function (done) {
-            initLibrary({}, {
+            library = initLibrary({}, {
                 flows: {}
             });
+            prepareApp()
             var flow = '[]';
             request(app)
                 .post('/library/flows/foo')
@@ -165,9 +183,10 @@ describe('library api', function () {
         });
 
         it('lists a stored item', function (done) {
-            initLibrary({
+            library = initLibrary({
                 f: ['bar']
             });
+            prepareApp()
             request(app)
                 .get('/library/flows')
                 .expect(200)
@@ -182,7 +201,8 @@ describe('library api', function () {
         });
 
         it('returns 403 for malicious get attempt', function (done) {
-            initLibrary({});
+            library = initLibrary({});
+            prepareApp()
             // without the userDir override the malicious url would be
             // http://127.0.0.1:1880/library/flows/../../package to
             // obtain package.json from the node-red root.
@@ -192,7 +212,8 @@ describe('library api', function () {
                 .end(done);
         });
         it('returns 403 for malicious post attempt', function (done) {
-            initLibrary({});
+            library = initLibrary({});
+            prepareApp()
             // without the userDir override the malicious url would be
             // http://127.0.0.1:1880/library/flows/../../package to
             // obtain package.json from the node-red root.
@@ -209,7 +230,8 @@ describe('library api', function () {
                     }
                 }
             };
-            initLibrary({}, {}, examples);
+            library = initLibrary({}, {}, examples);
+            prepareApp()
             request(app)
                 .get('/library/flows')
                 .expect(200)
@@ -226,7 +248,9 @@ describe('library api', function () {
     });
 
     describe('type', function () {
-        before(function () {
+        let library;
+
+        function prepareApp() {
 
             app = express();
             app.use(bodyParser.json());
@@ -235,14 +259,19 @@ describe('library api', function () {
                 settings: {}
             });
             library.register('test');
+        }
+        before(done => {
+            done()
         });
 
+
         it('returns empty result', function (done) {
-            initLibrary({}, {
+            library = initLibrary({}, {
                 'test': {
                     '': []
                 }
             });
+            prepareApp();
             request(app)
                 .get('/library/test')
                 .expect(200)
@@ -256,7 +285,8 @@ describe('library api', function () {
         });
 
         it('returns 404 for non-existent entry', function (done) {
-            initLibrary({}, {});
+            library = initLibrary({}, {});
+            prepareApp();
             request(app)
                 .get('/library/test/foo')
                 .expect(404)
@@ -264,9 +294,10 @@ describe('library api', function () {
         });
 
         it('can store and retrieve item', function (done) {
-            initLibrary({}, {
+            library = initLibrary({}, {
                 'test': {}
             });
+            prepareApp();
             var flow = {
                 text: 'test content'
             };
@@ -292,11 +323,12 @@ describe('library api', function () {
         });
 
         it('lists a stored item', function (done) {
-            initLibrary({}, {
+            library = initLibrary({}, {
                 'test': {
                     'a': ['abc', 'def']
                 }
             });
+            prepareApp();
             request(app)
                 .get('/library/test/a')
                 .expect(200)

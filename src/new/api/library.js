@@ -34,6 +34,11 @@ class Library {
     }
 
     getAll(req, res) {
+        const {
+            storage,
+            log
+        } = this
+
         storage.getAllFlows().then(function (flows) {
             log.audit({
                 event: 'library.get.all',
@@ -49,6 +54,11 @@ class Library {
     }
 
     get(req, res) {
+        const {
+            storage,
+            log
+        } = this
+
         if (req.params[0].indexOf('_examples_/') === 0) {
             var m = /^_examples_\/([^\/]+)\/(.*)$/.exec(req.params[0]);
             if (m) {
@@ -120,6 +130,10 @@ class Library {
     }
 
     post(req, res) {
+        const {
+            storage,
+            log
+        } = this
         // if (req.params[0].indexOf('_examples_/') === 0) {
         //     log.warn(log._('api.library.error-save-flow',{path:req.params[0],message:'forbidden'}));
         //     log.audit({event: 'library.set',type:'flow',path:req.params[0],error:'forbidden'},req);

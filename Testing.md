@@ -8,56 +8,51 @@
 
 - `credentials` 3/3 all pass :)
 - `flow` 11/11 all pass :)
-
-`testing` branch
-
 - `flows` 11/11 all pass :)
 - `flow` 11/11 all pass :)
-- `index` -> `Route.get` error (see below)
-- `info` -> `Route.get` error
-- `library` -> `Route.get` error
-- `locales` TODO (no tests defined)
-- `nodes` -> `Route.get` error (see below)
-- `theme` -> `Route.get` error (see below)
-- `ui`
 
-Why the `Route.get` error now? looks related to the `Api` class on initialization.
-
-### Route.get error
-
-`var api = require('.')` fails!!!
-
-`info_spec.js` error:
+### index_spec.js
 
 ```bash
-$ mocha test/api/info_spec.js
-/flows route { flRead: [Function],
-  flGet: [Function: get],
-  errorHandler: [Function: bound errorHandler] }
-/red-engine/packages/red-api/node_modules/express/lib/router/route.js:202
-        throw new Error(msg);
-        ^
-
-Error: Route.get() requires a callback function but got a [object Undefined]
-...
-at new Api (/red-engine/packages/red-api/src/new/api/index.js:179:16)
-at Object.<anonymous> (/red-engine/packages/red-api/test/api/index.js:31:13)
+     Error: Route.get() requires a callback function but got a [object Object]
+      at new Api (src/new/api/index.js:186:16)
 ```
 
-`library_spec`
+### info
 
 ```bash
-$ mocha test/api/library_spec.js
-/flows route { flRead: [Function],
-  flGet: [Function: get],
-  errorHandler: [Function: bound errorHandler] }
-/red-engine/packages/red-api/node_modules/express/lib/router/route.js:202
-        throw new Error(msg);
-        ^
-
-Error: Route.get() requires a callback function but got a [object Undefined]
-...
-(/red-engine/packages/red-api/test/api/library_spec.js:26:13)
+Attempted to wrap object property settings as function
+ at prepareApp test/api/info_spec.js:40:19
 ```
 
-... Fix this error and fix most!
+### library
+
+```bash
+TypeError: Cannot read property 'getAll' of undefined
+      at context.<anonymous> (test/api/library_spec.js:109:47)
+```
+
+### locales
+
+TODO (no tests defined)
+
+### nodes
+
+```bash
+     TypeError: Cannot read property 'getAll' of undefined
+      at Context.<anonymous> (test/api/nodes_spec.js:53:33)
+```
+
+### theme
+
+```bash
+ 1) theme handler applies the default theme:
+     AssertionError: expected Theme { settings: Object {} } to not exist
+      at context.<anonymous> (test/api/theme_spec.js:51:20)
+```
+
+### ui
+
+- 5 passing
+- 1 pending
+
