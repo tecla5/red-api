@@ -1,5 +1,15 @@
 # Testing
 
+## Current priorities
+
+- `nodes` 26/34
+
+Auth tests
+
+- `strategies` 2/10
+- `tokens` 0/6
+- `users` 6/11
+
 ## Status
 
 - `comms` Uncaught Error: socket hang up. Note: new `Comms` class is pretty much empty!!!
@@ -93,11 +103,7 @@ PS: Try to run each of the tests alone to see how many fail run in isolation (if
 
 ### theme
 
-```bash
- 1) theme handler applies the default theme:
-     AssertionError: expected Theme { settings: Object {} } to not exist
-      at context.<anonymous> (test/api/theme_spec.js:51:20)
-```
+2/2 passing
 
 ### ui
 
