@@ -37,10 +37,15 @@ var defaultContext = {
     }
 };
 
+const {
+    log
+} = console
+
 class Theme {
     constructor(runtime = {}) {
         var settings = runtime.settings || {};
-        this._settings = settings
+        // FIX: avoid override of method with same name
+        // this._settings = settings
 
         let themeContext = clone(defaultContext);
         if (runtime.version) {
@@ -58,8 +63,10 @@ class Theme {
         let {
             theme,
             themeApp,
-            themeSettings
+            themeSettings,
+            themeContext
         } = this
+        themeSettings = themeSettings || {}
 
         themeApp = express();
 
@@ -111,6 +118,11 @@ class Theme {
             }
         }
 
+        log({
+            theme,
+            themeSettings,
+            deployButton: theme.deployButton
+        })
         if (theme.deployButton) {
             if (theme.deployButton.type == 'simple') {
                 themeSettings.deployButton = {

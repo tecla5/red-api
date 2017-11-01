@@ -29,6 +29,10 @@ var {
     Theme
 } = api
 
+const {
+    log
+} = console
+
 describe('theme handler', function () {
     beforeEach(function () {
         sinon.stub(fs, 'statSync', function () {
@@ -36,19 +40,23 @@ describe('theme handler', function () {
         });
     });
     afterEach(function () {
-        theme = new Theme({
+        theme = Theme.init({
             settings: {}
         });
         fs.statSync.restore();
     });
     it('applies the default theme', function () {
-        var result = new Theme({
+        var theme = Theme.init({
             settings: {},
             version: function () {
                 return '123.456'
             }
         });
-        should.not.exist(result);
+        log('applies the default theme', {
+            theme
+        })
+
+        // should.not.exist(result);
 
         var context = theme.context();
         context.should.have.a.property('page');
@@ -59,11 +67,15 @@ describe('theme handler', function () {
         context.header.should.have.a.property('image', 'red/images/node-red.png');
         context.should.have.a.property('version', '123.456');
 
-        should.not.exist(theme.settings());
+        let settings = theme.settings()
+        log({
+            settings,
+        })
+        settings.should.be.empty();
     });
 
     it('picks up custom theme', function () {
-        theme = new Theme({
+        theme = Theme.init({
             settings: {
                 editorTheme: {
                     page: {
@@ -118,6 +130,9 @@ describe('theme handler', function () {
         context.page.scripts[0].should.eql('theme/scripts/script.js');
 
         var settings = theme.settings();
+        log({
+            settings
+        })
         settings.should.have.a.property('deployButton');
         settings.should.have.a.property('userMenu');
         settings.should.have.a.property('menu');
