@@ -190,8 +190,8 @@ describe('nodes api', function () {
                 });
         });
 
-        // fails: 400
-        it.skip('enables disabled node', function (done) {
+        // passes
+        it('enables disabled node', function (done) {
             let {
                 nodes,
                 locales
@@ -238,8 +238,8 @@ describe('nodes api', function () {
                 });
         });
 
-        // fails: 400
-        it.skip('disables enabled node', function (done) {
+        // passes
+        it('disables enabled node', function (done) {
             let {
                 nodes,
                 locales
@@ -356,8 +356,8 @@ describe('nodes api', function () {
             });
         });
 
-        // fails: 400
-        describe.skip('does not no-op if err on node', function () {
+        // passes
+        describe('does not no-op if err on node', function () {
             function run(state, done) {
                 var enableNode = sinon.spy(function () {
                     return when.resolve({
@@ -399,6 +399,7 @@ describe('nodes api', function () {
                     nodes,
                     locales
                 })
+                // putSet with putNode
                 request(app)
                     .put('/nodes/node-red/foo')
                     .send({
@@ -406,6 +407,11 @@ describe('nodes api', function () {
                     })
                     .expect(200)
                     .end(function (err, res) {
+                        log('put /nodes/node-red/foo', {
+                            err,
+                            res,
+                            state
+                        })
                         var enableNodeCalled = enableNode.called;
                         var disableNodeCalled = disableNode.called;
                         if (err) {
@@ -422,6 +428,7 @@ describe('nodes api', function () {
             it('already enabled', function (done) {
                 run(true, done);
             });
+
             it('already disabled', function (done) {
                 run(false, done);
             });
@@ -625,8 +632,8 @@ describe('nodes api', function () {
             });
         });
 
-        // fails: 400
-        describe.skip('does not no-op if err on a node in module', function () {
+        // passes
+        describe('does not no-op if err on a node in module', function () {
             function run(state, done) {
                 var node = {
                     id: '123',

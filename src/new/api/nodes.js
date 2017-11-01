@@ -356,6 +356,12 @@ class Nodes {
             log
         } = this
 
+        console.log('putSet', {
+            settings,
+            redNodes,
+            // ctx: this
+        })
+
         if (!settings.available()) {
             log.audit({
                 event: 'nodes.info.set',
@@ -392,7 +398,7 @@ class Nodes {
                 res.status(404).end();
             } else {
                 delete node.loaded;
-                putNode(node, body.enabled).then(function (result) {
+                this.putNode(node, body.enabled).then(function (result) {
                     log.audit({
                         event: 'nodes.info.set',
                         id: id,
@@ -427,7 +433,8 @@ class Nodes {
 
         console.log('putModule', {
             settings,
-            ctx: this
+            redNodes,
+            // ctx: this
         })
 
         if (!settings.available()) {
@@ -468,7 +475,7 @@ class Nodes {
             var nodes = module.nodes;
             var promises = [];
             for (var i = 0; i < nodes.length; ++i) {
-                promises.push(putNode(nodes[i], body.enabled));
+                promises.push(this.putNode(nodes[i], body.enabled));
             }
             when.settle(promises).then(function () {
                 res.json(redNodes.getModuleInfo(mod));
@@ -487,41 +494,48 @@ class Nodes {
             });
         }
     }
-}
 
-function putNode(node, enabled) {
-    var info;
-    var promise;
-    if (!node.err && node.enabled === enabled) {
-        promise = when.resolve(node);
-    } else {
-        if (enabled) {
-            promise = redNodes.enableNode(node.id);
+    putNode(node, enabled) {
+        const {
+            redNodes,
+            log,
+            events
+        } = this
+
+        var info;
+        var promise;
+        if (!node.err && node.enabled === enabled) {
+            promise = when.resolve(node);
         } else {
-            promise = redNodes.disableNode(node.id);
+            if (enabled) {
+                promise = redNodes.enableNode(node.id);
+            } else {
+                promise = redNodes.disableNode(node.id);
+            }
+
+            return promise.then(function (info) {
+                if (info.enabled === enabled && !info.err) {
+                    events.emit('runtime-event', {
+                        id: 'node/' + (enabled ? 'enabled' : 'disabled'),
+                        retain: false,
+                        payload: info
+                    });
+                    log.info(' ' + log._('api.nodes.' + (enabled ? 'enabled' : 'disabled')));
+                    for (var i = 0; i < info.types.length; i++) {
+                        log.info(' - ' + info.types[i]);
+                    }
+                } else if (enabled && info.err) {
+                    log.warn(log._('api.nodes.error-enable'));
+                    log.warn(' - ' + info.name + ' : ' + info.err);
+                }
+                return info;
+            });
         }
 
-        return promise.then(function (info) {
-            if (info.enabled === enabled && !info.err) {
-                events.emit('runtime-event', {
-                    id: 'node/' + (enabled ? 'enabled' : 'disabled'),
-                    retain: false,
-                    payload: info
-                });
-                log.info(' ' + log._('api.nodes.' + (enabled ? 'enabled' : 'disabled')));
-                for (var i = 0; i < info.types.length; i++) {
-                    log.info(' - ' + info.types[i]);
-                }
-            } else if (enabled && info.err) {
-                log.warn(log._('api.nodes.error-enable'));
-                log.warn(' - ' + info.name + ' : ' + info.err);
-            }
-            return info;
-        });
+        return promise;
     }
-
-    return promise;
 }
+
 
 Nodes.init = function (runtime) {
     return new Nodes(runtime)
