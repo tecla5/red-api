@@ -2,7 +2,24 @@
 
 ## Current priorities
 
-- `nodes` 26/34
+- `nodes` 27/34
+
+### install_nodes
+
+6/6 passing
+
+### get_nodes
+
+5/6 passing
+
+### delete_nodes
+
+4/4 passing
+
+### enable_disable
+
+11 passing
+6 pending
 
 Auth tests
 
