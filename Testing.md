@@ -2,29 +2,12 @@
 
 ## Current priorities
 
-- `nodes` 33/34
+Auth tests (in this order)
 
-### install_nodes
-
-6/6 passing
-
-### get_nodes
-
-5/6 passing
-
-### delete_nodes
-
-4/4 passing
-
-### enable_disable
-
-17 passing
-
-Auth tests
-
-- `strategies` 2/10
-- `tokens` 0/6
 - `users` 6/11
+- `strategies` 2/10
+
+See [original tests](https://github.com/node-red/node-red/tree/master/test/red/api/auth)
 
 ## Status
 
@@ -107,15 +90,23 @@ TODO (no tests defined)
 
 ### nodes
 
-26 passing
-8 failing
+33/34 passing
+### install_nodes
 
-In fact each or most  of the test pass, if run via `it.only`
-The problem is some side-effect on `prepareApp()` etc.
+6/6 passing
 
-We need proper `before` and `after` hooks, or even `beforeEach` and `afterEach`
+### get_nodes
 
-PS: Try to run each of the tests alone to see how many fail run in isolation (if any!!!)
+5/6 passing
+
+### delete_nodes
+
+4/4 passing
+
+### enable_disable
+
+17 passing
+
 
 ### theme
 
@@ -156,8 +147,7 @@ TODO
 
 ### tokens
 
-0 passing
-6 failing
+6/6 passing
 
 ### users
 

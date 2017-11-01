@@ -26,8 +26,6 @@ var Users = require('./users');
 var Clients = require('./clients');
 var permissions = require('./permissions');
 
-var log;
-
 var loginAttempts = [];
 var loginSignInWindow = 600000; // 10 minutes
 
@@ -54,7 +52,7 @@ class AnonymousStrategy extends passport.Strategy {
 }
 
 class Strategies {
-    constructor(runtime) {
+    constructor(runtime = {}) {
         this.log = runtime.log;
         this.bearerStrategy.BearerStrategy = new BearerStrategy(this.bearerStrategy);
         this.clientPasswordStrategy.ClientPasswordStrategy = new ClientPasswordStrategy(this.clientPasswordStrategy);
@@ -66,8 +64,10 @@ class Strategies {
     }
 
     bearerStrategy(accessToken, done) {
-        var tokens = this.tokens
-        var log = this.log;
+        const {
+            tokens,
+            log
+        } = this
 
         // is this a valid token?
         tokens.get(accessToken).then((token) => {
@@ -94,7 +94,9 @@ class Strategies {
     }
 
     clientPasswordStrategy(clientId, clientSecret, done) {
-        var log = this.log;
+        const {
+            log
+        } = this
 
         clients.get(clientId).then(function (client) {
             if (client && client.secret == clientSecret) {
@@ -110,9 +112,10 @@ class Strategies {
     }
 
     passwordTokenExchange(client, username, password, scope, done) {
-        var log = this.log;
-        var users = this.users
-
+        const {
+            users,
+            log
+        } = this
         var now = Date.now();
 
         loginAttempts = loginAttempts.filter((logEntry) => {
@@ -139,16 +142,28 @@ class Strategies {
             return;
         }
 
-        users.authenticate(username, password).then((user) => {
+        users.authenticate(username, password).then(user => {
+            console.log('authenticate', {
+                username,
+                password,
+                user
+            })
             if (user) {
                 if (scope === '') {
                     scope = user.permissions;
                 }
                 if (permissions.hasPermission(user.permissions, scope)) {
-                    loginAttempts = loginAttempts.filter((logEntry) => {
+                    loginAttempts = loginAttempts.filter(logEntry => {
                         return logEntry.user !== username;
                     });
-                    Tokens.create(username, client.id, scope).then((tokens) => {
+                    console.log('Tokens.create', {
+                        username,
+                        id: client.id
+                    })
+                    Tokens.create(username, client.id, scope).then(tokens => {
+                        console.log('tokens created', {
+                            tokens
+                        })
                         log.audit({
                             event: 'auth.login',
                             username: username,
@@ -169,6 +184,10 @@ class Strategies {
                     done(null, false);
                 }
             } else {
+                console.log('auth: login.fail.credentials', {
+                    user
+                })
+
                 log.audit({
                     event: 'auth.login.fail.credentials',
                     username: username,

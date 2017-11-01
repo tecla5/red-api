@@ -15,6 +15,8 @@
  **/
 
 var should = require('should');
+const expect = require('chai').expect;
+
 var when = require('when');
 var sinon = require('sinon');
 
@@ -23,19 +25,23 @@ var {
     Tokens
 } = require('../');
 
+const {
+    log
+} = console
 
 describe('Tokens', function () {
     describe('#init', function () {
         it('loads sessions', function (done) {
-            tokens = new Tokens({}).then(done);
+            tokens = Tokens.init({})
+            done()
         });
     });
 
 
     describe('#get', function () {
         it('returns a valid token', function (done) {
-            tokens = new Tokens({}, {
-                getSessions: function () {
+            tokens = Tokens.init({}, {
+                getSessions() {
                     return when.resolve({
                         '1234': {
                             'user': 'fred',
@@ -43,39 +49,48 @@ describe('Tokens', function () {
                         }
                     });
                 }
-            }).then(function () {
-                tokens.get('1234').then(function (token) {
-                    try {
-                        token.should.have.a.property('user', 'fred');
-                        done();
-                    } catch (err) {
-                        done(err);
-                    }
-                });
+            })
+            // FAILS
+            // because the 2nd argument to Tokens.init with getSessions()
+            // is not being set and used internally in Tokens
+
+            // NOTE: should be using this.storage.getSessions() to return sessions to lookup in!
+
+            tokens.get('1234').then(token => {
+                log('get:1234', {
+                    token
+                })
+                try {
+                    expect(token).to.not.be.a('null')
+                    expect(token).have.a.property('user', 'fred');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
 
         it('returns null for an invalid token', function (done) {
-            tokens = new Tokens({}, {
-                getSessions: function () {
+            tokens = Tokens.init({}, {
+                getSessions() {
                     return when.resolve({});
                 }
-            }).then(function () {
-                tokens.get('1234').then(function (token) {
-                    try {
-                        should.not.exist(token);
-                        done();
-                    } catch (err) {
-                        done(err);
-                    }
-                });
+            })
+            tokens.get('1234').then(function (token) {
+                try {
+                    should.not.exist(token);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
+
         it('returns null for an expired token', function (done) {
             var saveSessions = sinon.stub().returns(when.resolve());
             var expiryTime = Date.now() + 50;
-            tokens = new Tokens({}, {
-                getSessions: () => {
+            tokens = Tokens.init({}, {
+                getSessions() {
                     return when.resolve({
                         '1234': {
                             'user': 'fred',
@@ -84,25 +99,24 @@ describe('Tokens', function () {
                     });
                 },
                 saveSessions: saveSessions
-            }).then(function () {
-                tokens.get('1234').then((token) => {
-                    try {
-                        should.exist(token);
-                        setTimeout(() => {
-                            tokens.get('1234').then((token) => {
-                                try {
-                                    should.not.exist(token);
-                                    saveSessions.calledOnce.should.be.true();
-                                    done();
-                                } catch (err) {
-                                    done(err);
-                                }
-                            });
-                        }, 100);
-                    } catch (err) {
-                        done(err);
-                    }
-                });
+            })
+            tokens.get('1234').then((token) => {
+                try {
+                    should.exist(token);
+                    setTimeout(() => {
+                        tokens.get('1234').then((token) => {
+                            try {
+                                should.not.exist(token);
+                                saveSessions.calledOnce.should.be.true();
+                                done();
+                            } catch (err) {
+                                done(err);
+                            }
+                        });
+                    }, 100);
+                } catch (err) {
+                    done(err);
+                }
             });
         });
     });
@@ -110,7 +124,7 @@ describe('Tokens', function () {
     describe('#create', () => {
         it('creates a token', (done) => {
             var savedSession;
-            Tokens.init({
+            tokens = Tokens.init({
                 sessionExpiryTime: 10
             }, {
                 getSessions: function () {
@@ -124,7 +138,7 @@ describe('Tokens', function () {
             var expectedExpiryTime = Date.now() + 10000;
 
 
-            tokens.create('user', 'client', 'scope').then((token) => {
+            tokens.create('user', 'client', 'scope').then(token => {
                 try {
                     should.exist(savedSession);
                     var sessionKeys = Object.keys(savedSession);
@@ -147,7 +161,7 @@ describe('Tokens', function () {
     describe('#revoke', function () {
         it('revokes a token', function (done) {
             var savedSession;
-            tokens = new Tokens({}, {
+            tokens = Tokens.init({}, {
                 getSessions: function () {
                     return when.resolve({
                         '1234': {
@@ -160,15 +174,14 @@ describe('Tokens', function () {
                     savedSession = sess;
                     return when.resolve();
                 }
-            }).then(() => {
-                Tokens.revoke('1234').then(() => {
-                    try {
-                        savedSession.should.not.have.a.property('1234');
-                        done();
-                    } catch (err) {
-                        done(err);
-                    }
-                });
+            })
+            tokens.revoke('1234').then(() => {
+                try {
+                    savedSession.should.not.have.a.property('1234');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
     });

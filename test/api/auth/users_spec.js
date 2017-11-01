@@ -15,6 +15,10 @@
  **/
 
 var should = require('should');
+const {
+    expect,
+    assert
+} = require('chai')
 var when = require('when');
 var sinon = require('sinon');
 
@@ -23,10 +27,14 @@ var {
     Users
 } = require('../');
 
+const {
+    log
+} = console
+
 describe('Users', function () {
     describe('Initalised with a credentials object, no anon', function () {
         before(function () {
-            users = new Users({
+            users = Users.init({
                 type: 'credentials',
                 users: {
                     username: 'fred',
@@ -38,12 +46,18 @@ describe('Users', function () {
         });
 
         describe('#get', function () {
-            it('returns known user', function (done) {
-                users.get('fred').then(function (user) {
+            it.only('returns known user', function (done) {
+                users.get('fred').then(user => {
+                    log('get user: fred', {
+                        user
+                    })
+                    if (!user) {
+                        done('users.get:fred FAILS - ensure proper before setup')
+                    }
                     try {
-                        user.should.have.a.property('username', 'fred');
-                        user.should.have.a.property('permissions', '*');
-                        user.should.not.have.a.property('password');
+                        expect(user).to.have.a.property('username', 'fred');
+                        expect(user).to.have.a.property('permissions', '*');
+                        expect(user).to.not.have.a.property('password');
                         done();
                     } catch (err) {
                         done(err);
@@ -115,7 +129,7 @@ describe('Users', function () {
 
     describe('Initalised with a credentials object including anon', function () {
         before(function () {
-            users = new Users({
+            users = Users.init({
                 type: 'credentials',
                 users: [],
                 default: {
@@ -142,7 +156,7 @@ describe('Users', function () {
         var authUsername = '';
         var authPassword = '';
         before(function () {
-            users = new Users({
+            users = Users.init({
                 type: 'credentials',
                 users: function (username) {
                     return when.resolve({
@@ -193,7 +207,7 @@ describe('Users', function () {
 
     describe('Initialised with bad settings to test else cases', function () {
         before(function () {
-            users = new Users({
+            users = Users.init({
                 type: 'foo',
                 users: {
                     username: 'fred',
@@ -219,7 +233,7 @@ describe('Users', function () {
 
     describe('Initialised with default set as function', function () {
         before(function () {
-            users = new Users({
+            users = Users.init({
                 type: 'credentials',
                 default: function () {
                     return ('Done');

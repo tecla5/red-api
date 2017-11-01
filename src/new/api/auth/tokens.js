@@ -16,14 +16,9 @@
 
 var when = require('when');
 
-function generateToken(length) {
-    var c = 'ABCDEFGHIJKLMNOPQRSTUZWXYZabcdefghijklmnopqrstuvwxyz1234567890';
-    var token = [];
-    for (var i = 0; i < length; i++) {
-        token.push(c[Math.floor(Math.random() * c.length)]);
-    }
-    return token.join('');
-}
+const {
+    log
+} = console
 
 class Tokens {
     constructor(adminAuthSettings = {}, _storage) {
@@ -32,10 +27,29 @@ class Tokens {
         // At this point, storage will not have been initialised, so defer loading
         // the sessions until there's a request for them.
         this.loadedSessions = null;
-        this.sessions = null;
+        this.sessions = {};
+    }
+
+    generateToken(length) {
+        var c = 'ABCDEFGHIJKLMNOPQRSTUZWXYZabcdefghijklmnopqrstuvwxyz1234567890';
+        var token = [];
+        for (var i = 0; i < length; i++) {
+            token.push(c[Math.floor(Math.random() * c.length)]);
+        }
+        return token.join('');
+    }
+
+    // FIX: could be used in .init factory
+    // to simulate previous init (constructor) return Promise behaviour (see legacy init)
+    configure() {
+        return when.resolve(this);
     }
 
     expireSessions() {
+        const {
+            sessions,
+            storage
+        } = this
         var now = Date.now();
         var modified = false;
         for (var t in sessions) {
@@ -48,7 +62,7 @@ class Tokens {
             }
         }
         if (modified) {
-            return this.storage.saveSessions(sessions);
+            return storage.saveSessions(sessions);
         } else {
             return when.resolve();
         }
@@ -56,16 +70,20 @@ class Tokens {
 
     loadSessions() {
         if (this.loadedSessions === null) {
-            this.loadedSessions = storage.getSessions().then((_sessions) => {
+            // console.log('loading sessions from storage')
+            this.loadedSessions = this.storage.getSessions().then(_sessions => {
                 this.sessions = _sessions || {};
-                return expireSessions();
+                return this.expireSessions();
             });
+        } else {
+            // console.log('NOT loading sessions from storage :(')
         }
         return this.loadedSessions;
     }
 
     get(token) {
-        return this.loadSessions().then(() => {
+        let loads = this.loadSessions()
+        return loads.then(loaded => {
             var sessionToken = this.sessions[token]
             if (sessionToken) {
                 if (sessionToken.expires < Date.now()) {
@@ -77,8 +95,8 @@ class Tokens {
     }
 
     create(user, client, scope) {
-        return this.loadSessions().then(() => {
-            var accessToken = generateToken(128);
+        return this.loadSessions().then(loaded => {
+            var accessToken = this.generateToken(128);
 
             var accessTokenExpiresAt = Date.now() + (this.sessionExpiryTime * 1000);
 
@@ -93,14 +111,14 @@ class Tokens {
             return this.storage.saveSessions(this.sessions).then(() => {
                 return {
                     accessToken: accessToken,
-                    expires_in: sessionExpiryTime
+                    expires_in: this.sessionExpiryTime
                 }
             });
         });
     }
 
     revoke(token) {
-        return this.loadSessions().then(() => {
+        return this.loadSessions().then(loaded => {
             delete this.sessions[token];
             return this.storage.saveSessions(this.sessions);
         });
@@ -108,7 +126,7 @@ class Tokens {
 }
 
 Tokens.init = function (settings, storage) {
-    return new Tokens(settings, storage)
+    return new Tokens(settings, storage) //.configure()
 }
 
 module.exports = Tokens

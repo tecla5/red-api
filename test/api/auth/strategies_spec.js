@@ -35,7 +35,7 @@ describe('Auth strategies', function () {
             }
         })
         users = new Users()
-        tokens = new Tokens()
+        tokens = new Tokens() // adminAuthSettings = {}, _storage
     });
     describe('Password Token Exchange', function () {
         var userAuthentication;
@@ -81,7 +81,7 @@ describe('Auth strategies', function () {
             });
         });
 
-        it('Creates new token on authentication success', function (done) {
+        it.only('Creates new token on authentication success', function (done) {
             userAuthentication = sinon.stub(users, 'authenticate', function (username, password) {
                 return when.resolve({
                     username: 'user',
@@ -89,14 +89,38 @@ describe('Auth strategies', function () {
                 });
             });
             var tokenDetails = {};
+
+            // stub tokens.create response to resolve to: 123456
+            // to ensure expectation is met, always same (fake) token
             var tokenCreate = sinon.stub(tokens, 'create', function (username, client, scope) {
+                log('fake Token:create', {
+                    username,
+                    client
+                })
+                let accessToken = '123456'
                 tokenDetails.username = username;
                 tokenDetails.client = client;
                 tokenDetails.scope = scope;
+                log('returning fake token', accessToken)
                 return when.resolve({
-                    accessToken: '123456'
+                    accessToken
                 });
             });
+
+            // FAILS due to:
+            //      users.authenticate(username, password)
+
+            // NOT returning an authenticated user :()
+            // could be due to Strategies constructor
+
+            // perhaps not initializing users instance correctly?
+            //      this.users = new Users()
+
+            // should be
+            //      new Users(config)
+            // whatever config might/should be!?
+
+            // conclusion: focus on users_spec first
 
             strategies.passwordTokenExchange({
                 id: 'myclient'

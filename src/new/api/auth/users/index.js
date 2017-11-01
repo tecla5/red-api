@@ -16,57 +16,10 @@
 
 var when = require('when');
 var util = require('util');
-var bcrypt;
-try {
-    bcrypt = require('bcrypt');
-} catch (e) {
-    bcrypt = require('bcryptjs');
-}
 
-class Api {
-    constructor() {
-        this.users = {};
-        this.passwords = {};
-        this.defaultUser = null;
-    }
-
-    get(username) {
-        var user = this.users[username];
-        return when.resolve(user);
-    }
-
-    authenticate() {
-        var users = this.users
-        var username = arguments[0];
-        if (typeof username !== 'string') {
-            username = username.username;
-        }
-        var user = users[username];
-        if (user) {
-            if (arguments.length === 2) {
-                // Username/password authentication
-                var password = arguments[1];
-                return when.promise(function (resolve, reject) {
-                    bcrypt.compare(password, passwords[username], function (err, res) {
-                        resolve(res ? user : null);
-                    });
-                });
-            } else {
-                // Try to extract common profile information
-                if (arguments[0].hasOwnProperty('photos') && arguments[0].photos.length > 0) {
-                    user.image = arguments[0].photos[0].value;
-                }
-                return when.resolve(user);
-            }
-        }
-        return when.resolve(null);
-    }
-
-    default () {
-        return when.resolve(null);
-    }
-}
-
+const {
+    Api
+} = require('./api');
 
 class Users {
     constructor(config = {}) {
