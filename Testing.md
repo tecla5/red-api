@@ -2,7 +2,7 @@
 
 ## Status
 
-- `comms` Uncaught Error: socket hang up. Noe: new `Comms` class is pretty much empty!!!
+- `comms` Uncaught Error: socket hang up. Note: new `Comms` class is pretty much empty!!!
 
 `develop` branch
 
