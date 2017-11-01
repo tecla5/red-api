@@ -46,7 +46,7 @@ describe('Users', function () {
         });
 
         describe('#get', function () {
-            it.only('returns known user', function (done) {
+            it('returns known user', function (done) {
                 users.get('fred').then(user => {
                     log('get user: fred', {
                         user
@@ -92,11 +92,21 @@ describe('Users', function () {
 
         describe('#authenticate', function () {
             it('authenticates a known user', function (done) {
-                users.authenticate('fred', 'password').then((user) => {
+                users.authenticate('fred', 'password').then(user => {
+                    log('authenticates a known user', {
+                        user
+                    })
+                    if (!user) {
+                        done(new Error('user not authenticated'))
+                        return
+                    }
+
                     try {
-                        user.should.have.a.property('username', 'fred');
-                        user.should.have.a.property('permissions', '*');
-                        user.should.not.have.a.property('password');
+                        if (user) {
+                            expect(user).to.have.a.property('username', 'fred');
+                            expect(user).to.have.a.property('permissions', '*');
+                            expect(user).to.not.have.a.property('password');
+                        }
                         done();
                     } catch (err) {
                         done(err);
@@ -218,14 +228,9 @@ describe('Users', function () {
         });
         describe('#get', function () {
             it('should fail to return user fred', function (done) {
-                users.get('fred').then((userf) => {
-                    try {
-                        userf.should.not.have.a.property('username', 'fred');
-                        userf.should.not.have.a.property('permissions', '*');
-                        done();
-                    } catch (err) {
-                        done(err);
-                    }
+                users.get('fred').then(user => {
+                    expect(user).to.be.undefined
+                    done();
                 });
             });
         });

@@ -4,10 +4,30 @@
 
 Auth tests (in this order)
 
-- `users` 6/11
 - `strategies` 2/10
 
 See [original tests](https://github.com/node-red/node-red/tree/master/test/red/api/auth)
+
+### Token exchange
+
+  1 passing (306ms)
+  2 failing
+
+`ReferenceError: loginSignInWindow is not defined`
+
+### Bearer strategy
+
+  0 passing (288ms)
+  3 failing
+
+`TypeError: Attempted to wrap undefined property get as function`
+
+### Anonomous
+
+ 0 passing (255ms)
+ 6 failing
+
+`Attempted to wrap undefined property default as function`
 
 ## Status
 
@@ -151,5 +171,4 @@ TODO
 
 ### users
 
-6 passing
-5 failing
+11 passing

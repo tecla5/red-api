@@ -26,9 +26,6 @@ var Users = require('./users');
 var Clients = require('./clients');
 var permissions = require('./permissions');
 
-var loginAttempts = [];
-var loginSignInWindow = 600000; // 10 minutes
-
 class AnonymousStrategy extends passport.Strategy {
     constructor() {
         super()
@@ -38,8 +35,7 @@ class AnonymousStrategy extends passport.Strategy {
     }
 
     authenticate(req) {
-        var users = this.users
-        users.default().then((anon) => {
+        this.users.default().then((anon) => {
             if (anon) {
                 this.success(anon, {
                     scope: anon.permissions
@@ -59,8 +55,11 @@ class Strategies {
         this.anonymousStrategy = new AnonymousStrategy()
 
         this.tokens = new Tokens()
-        this.clients = Clients
         this.users = new Users()
+
+        this.clients = Clients
+        this.loginAttempts = [];
+        this.loginSignInWindow = 600000; // 10 minutes
     }
 
     bearerStrategy(accessToken, done) {
@@ -114,19 +113,21 @@ class Strategies {
     passwordTokenExchange(client, username, password, scope, done) {
         const {
             users,
-            log
+            log,
+            loginAttempts
         } = this
         var now = Date.now();
 
-        loginAttempts = loginAttempts.filter((logEntry) => {
+        this.loginAttempts = this.loginAttempts.filter(logEntry => {
             return logEntry.time + loginSignInWindow > now;
         });
-        loginAttempts.push({
+        this.loginAttempts.push({
             time: now,
             user: username
         });
-        var attemptCount = 0;
-        loginAttempts.forEach((logEntry) => {
+
+        let attemptCount = 0;
+        loginAttempts.forEach(logEntry => {
             /* istanbul ignore else */
             if (logEntry.user == username) {
                 attemptCount++;
@@ -149,11 +150,15 @@ class Strategies {
                 user
             })
             if (user) {
+                console.log('with user', {
+                    user
+                })
+
                 if (scope === '') {
                     scope = user.permissions;
                 }
                 if (permissions.hasPermission(user.permissions, scope)) {
-                    loginAttempts = loginAttempts.filter(logEntry => {
+                    this.loginAttempts = loginAttempts.filter(logEntry => {
                         return logEntry.user !== username;
                     });
                     console.log('Tokens.create', {

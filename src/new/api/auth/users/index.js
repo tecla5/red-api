@@ -21,14 +21,16 @@ const {
     Api
 } = require('./api');
 
+const {
+    log
+} = console
+
 class Users {
     constructor(config = {}) {
-        var users = {}
-        var passwords = {}
-        this.users = users;
-        this.passwords = passwords;
+        this.users = config.users || {}
+        this.passwords = config.passwords || {}
 
-        var api = new Api()
+        var api = new Api(config)
         this.api = api
 
         if (config.type == 'credentials' || config.type == 'strategy') {
@@ -36,30 +38,51 @@ class Users {
                 if (typeof config.users === 'function') {
                     api.get = config.users;
                 } else {
-                    var us = config.users;
-                    /* istanbul ignore else */
-                    if (!util.isArray(us)) {
-                        us = [us];
+                    var users = config.users;
+                    /* normalize Array */
+                    if (!util.isArray(users)) {
+                        users = [users];
                     }
-                    for (var i = 0; i < us.length; i++) {
-                        var u = us[i];
-                        users[u.username] = {
-                            'username': u.username,
-                            'permissions': u.permissions
+                    // TODO: iterate via .map or sth
+                    for (var i = 0; i < users.length; i++) {
+                        var user = users[i];
+
+                        log('set users and passwords', {
+                            user,
+                            users
+                        })
+
+                        this.users[user.username] = {
+                            'username': user.username,
+                            'permissions': user.permissions
                         };
-                        passwords[u.username] = u.password;
+                        this.passwords[user.username] = user.password;
                     }
+                    log('set users and passwords: DONE', {
+                        users: this.users,
+                        passwords: this.passwords
+                    })
                 }
             }
+
             if (config.authenticate && typeof config.authenticate === 'function') {
-                api.authenticate = config.authenticate;
+                console.log('api: override with custom authenticate function')
+                api.authenticate = config.authenticate.bind(api);
             } else {
-                api.authenticate = this.authenticate
+                console.log('api: use default authenticate function')
+                // api.authenticate = this.authenticate.bind(api)
             }
         }
+
+        api.setCredentials({
+            users: this.users,
+            passwords: this.passwords
+        })
+
         if (config.default) {
             if (typeof config.default === 'function') {
-                api.default = config.default;
+                console.log('api: override with custom default function')
+                api.default = config.default.bind(api);
             } else {
                 api.default = function () {
                     return when.resolve({
@@ -74,9 +97,9 @@ class Users {
     get(username) {
         return this.api.get(username)
     }
-    authenticate() {
+    authenticate(...args) {
         // FIX: Not sure about this
-        return this.api.authenticate.apply(this.api, arguments)
+        return this.api.authenticate(...args)
     }
     default () {
         return this.api.default();
