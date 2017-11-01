@@ -26,25 +26,26 @@ var Users = require('./users');
 var Clients = require('./clients');
 var permissions = require('./permissions');
 
-class AnonymousStrategy extends passport.Strategy {
-    constructor() {
-        super()
-        passport.Strategy.call(this);
-        this.name = 'anon';
-        this.users = new Users()
-    }
+function AnonymousStrategy() {
+    passport.Strategy.call(this);
+    this.name = 'anon';
+}
 
-    authenticate(req) {
-        this.users.default().then((anon) => {
+function anonymousStrategy(users) {
+    util.inherits(AnonymousStrategy, passport.Strategy);
+    AnonymousStrategy.prototype.authenticate = function (req) {
+        var self = this;
+        users.default().then(function (anon) {
             if (anon) {
-                this.success(anon, {
+                self.success(anon, {
                     scope: anon.permissions
                 });
             } else {
-                this.fail(401);
+                self.fail(401);
             }
-        })
+        });
     }
+    return AnonymousStrategy
 }
 
 class Strategies {
@@ -52,10 +53,25 @@ class Strategies {
         this.log = runtime.log;
         this.bearerStrategy.BearerStrategy = new BearerStrategy(this.bearerStrategy);
         this.clientPasswordStrategy.ClientPasswordStrategy = new ClientPasswordStrategy(this.clientPasswordStrategy);
-        this.anonymousStrategy = new AnonymousStrategy()
 
-        this.tokens = new Tokens()
-        this.users = new Users()
+        console.log('Strategies', {
+            runtime,
+            settings: runtime.settings
+        })
+
+        // Very hacky. There must/should be a better way...
+        let settings = runtime.settings
+        if (typeof settings === 'object') {
+            this.tokens = settings.tokens
+            this.users = settings.users
+        }
+
+        this.tokens = this.tokens || new Tokens() // adminAuthSettings = {}, _storage
+        this.users = this.users || new Users() // config {users, passwords}
+
+        const strategyClazz = anonymousStrategy(this.users)
+
+        this.anonymousStrategy = new strategyClazz()
 
         this.clients = Clients
         this.loginAttempts = [];
@@ -64,14 +80,21 @@ class Strategies {
 
     bearerStrategy(accessToken, done) {
         const {
-            tokens,
             log
         } = this
 
         // is this a valid token?
-        tokens.get(accessToken).then((token) => {
+        let gotToken = this.tokens.get(accessToken)
+        console.log('bearerStrategy', {
+            gotToken
+        })
+
+        gotToken.then(token => {
+            console.log('found token', {
+                token
+            })
             if (token) {
-                Users.get(token.user).then((user) => {
+                this.users.get(token.user).then(user => {
                     if (user) {
                         done(null, user, {
                             scope: token.scope
@@ -97,7 +120,7 @@ class Strategies {
             log
         } = this
 
-        clients.get(clientId).then(function (client) {
+        this.clients.get(clientId).then(client => {
             if (client && client.secret == clientSecret) {
                 done(null, client);
             } else {
@@ -114,7 +137,8 @@ class Strategies {
         const {
             users,
             log,
-            loginAttempts
+            loginAttempts,
+            loginSignInWindow
         } = this
         var now = Date.now();
 
@@ -127,7 +151,7 @@ class Strategies {
         });
 
         let attemptCount = 0;
-        loginAttempts.forEach(logEntry => {
+        this.loginAttempts.forEach(logEntry => {
             /* istanbul ignore else */
             if (logEntry.user == username) {
                 attemptCount++;
@@ -139,6 +163,10 @@ class Strategies {
                 username: username,
                 client: client.id
             });
+            console.log('Too many login attempts!!', {
+                attemptCount
+            })
+
             done(new Error('Too many login attempts. Wait 10 minutes and try again'), false);
             return;
         }

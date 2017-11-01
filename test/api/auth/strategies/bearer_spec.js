@@ -13,19 +13,24 @@ var strategies, users, tokens
 
 describe('Auth strategies', function () {
   before(function () {
+    users = new Users() // config {users, passwords}
+    tokens = new Tokens() // adminAuthSettings = {}, _storage
     strategies = new Strategies({
       log: {
         audit: function () {}
+      },
+      settings: {
+        tokens,
+        users
       }
     })
-    users = new Users()
-    tokens = new Tokens() // adminAuthSettings = {}, _storage
   });
 
 
   describe('Bearer Strategy', function () {
     it('Rejects invalid token', function (done) {
-      var getToken = sinon.stub(Tokens, 'get', function (token) {
+      var getToken = sinon.stub(tokens, 'get', function (token) {
+        console.log('fake token resolve null')
         return when.resolve(null);
       });
 
@@ -43,14 +48,14 @@ describe('Auth strategies', function () {
     });
 
     it('Accepts valid token', function (done) {
-      var getToken = sinon.stub(Tokens, 'get', function (token) {
+      var getToken = sinon.stub(tokens, 'get', function (token) {
         return when.resolve({
           user: 'user',
           scope: 'scope'
         });
       });
 
-      var getUser = sinon.stub(Users, 'get', function (username) {
+      var getUser = sinon.stub(users, 'get', function (username) {
         return when.resolve('aUser');
       });
 
@@ -70,13 +75,13 @@ describe('Auth strategies', function () {
     });
 
     it('Fail if no user for token', function (done) {
-      var getToken = sinon.stub(Tokens, 'get', function (token) {
+      var getToken = sinon.stub(tokens, 'get', function (token) {
         return when.resolve({
           user: 'user',
           scope: 'scope'
         });
       });
-      var getUser = sinon.stub(Users, 'get', function (username) {
+      var getUser = sinon.stub(users, 'get', function (username) {
         return when.resolve(null);
       });
 

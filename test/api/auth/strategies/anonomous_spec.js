@@ -27,20 +27,28 @@ var {
 
 var strategies, users, tokens
 
+const {
+    log
+} = console
+
 describe('Auth strategies', function () {
     before(function () {
+        users = new Users()
+        tokens = new Tokens() // adminAuthSettings = {}, _storage
         strategies = new Strategies({
             log: {
                 audit: function () {}
+            },
+            settings: {
+                users,
+                tokens
             }
         })
-        users = new Users()
-        tokens = new Tokens() // adminAuthSettings = {}, _storage
     });
 
     describe('Anonymous Strategy', function () {
         it('Succeeds if anon user enabled', function (done) {
-            var userDefault = sinon.stub(Users, 'default', function () {
+            var userDefault = sinon.stub(users, 'default', function () {
                 return when.resolve('anon');
             });
             strategies.anonymousStrategy._success = strategies.anonymousStrategy.success;
@@ -54,7 +62,7 @@ describe('Auth strategies', function () {
             strategies.anonymousStrategy.authenticate({});
         });
         it('Fails if anon user not enabled', function (done) {
-            var userDefault = sinon.stub(Users, 'default', function () {
+            var userDefault = sinon.stub(users, 'default', function () {
                 return when.resolve(null);
             });
             strategies.anonymousStrategy._fail = strategies.anonymousStrategy.fail;
@@ -131,7 +139,7 @@ describe('Auth strategies', function () {
 
         var userAuthentication;
         it('Blocks after 5 failures', function (done) {
-            userAuthentication = sinon.stub(Users, 'authenticate', function (username, password) {
+            userAuthentication = sinon.stub(users, 'authenticate', function (username, password) {
                 return when.resolve(null);
             });
             for (var z = 0; z < 5; z++) {
@@ -139,7 +147,12 @@ describe('Auth strategies', function () {
             }
             strategies.passwordTokenExchange({}, 'user', 'badpassword', 'scope', function (err, token) {
                 try {
-                    err.toString().should.equal('Error: Too many login attempts. Wait 10 minutes and try again');
+                    // log({
+                    //     err,
+                    //     token
+                    // })
+                    let errStr = err.message;
+                    errStr.should.match(/Too many login attempts/);
                     token.should.be.false();
                     done();
                 } catch (e) {

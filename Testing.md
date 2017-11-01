@@ -2,32 +2,28 @@
 
 ## Current priorities
 
-Auth tests (in this order)
-
-- `strategies` 2/10
+Auth tests
 
 See [original tests](https://github.com/node-red/node-red/tree/master/test/red/api/auth)
 
+For now we can somewhat ignore the auth/strategies code and tests.
+
+We will MOST likely re-implement (replace) the custom Auth strategy with [Auth0](https://auth0.com/) or a similar solution.
+
 ### Token exchange
 
-  1 passing (306ms)
-  2 failing
+  2 passing (306ms)
+  1 failing
 
-`ReferenceError: loginSignInWindow is not defined`
+`AssertionError: expected false to be '123456'`
 
 ### Bearer strategy
 
-  0 passing (288ms)
-  3 failing
+  3 passing
 
-`TypeError: Attempted to wrap undefined property get as function`
+### Anonomous strategy
 
-### Anonomous
-
- 0 passing (255ms)
- 6 failing
-
-`Attempted to wrap undefined property default as function`
+ 6 passing
 
 ## Status
 

@@ -82,6 +82,9 @@ class Tokens {
     }
 
     get(token) {
+        console.log('Tokens:get', {
+            token
+        })
         let loads = this.loadSessions()
         return loads.then(loaded => {
             var sessionToken = this.sessions[token]
